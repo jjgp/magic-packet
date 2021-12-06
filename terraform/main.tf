@@ -7,6 +7,10 @@ terraform {
   }
 }
 
+locals {
+  tag_name = "magic_packet"
+}
+
 provider "aws" {
   region = var.region
 }
@@ -16,7 +20,7 @@ resource "aws_key_pair" "key_pair" {
   public_key = var.public_key
 
   tags = {
-    Name = "magic_packet"
+    Name = local.tag_name
   }
 }
 
@@ -26,6 +30,6 @@ resource "aws_spot_instance_request" "instance_request" {
   key_name      = var.key_name
 
   tags = {
-    Name = "magic_packet"
+    Name = local.tag_name
   }
 }
