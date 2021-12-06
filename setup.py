@@ -18,7 +18,7 @@ setup(
     url="https://github.com/jjgp/magic-packet",
     author="Jason Prasad",
     author_email="jasongprasad@gmail.com",
-    description="Description of my package",
+    description="Wake word detection",
     install_requires=install_requires,
     extras_require=extras_require,
 )
