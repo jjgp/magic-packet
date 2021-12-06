@@ -8,7 +8,7 @@ terraform {
 }
 
 locals {
-  tag_name = "magic_packet"
+  tag_name = "magic_packet_spot_instance"
 }
 
 provider "aws" {
