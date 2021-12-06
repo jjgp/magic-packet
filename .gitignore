@@ -1,6 +1,6 @@
-__pycache__/
 *.egg-info/
 *.ipynb_checkpoints/
-.terraform/
 *.tfstate
 *.tfstate.backup
+.terraform/
+__pycache__/
