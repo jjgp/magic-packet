@@ -11,7 +11,7 @@ provider "aws" {
   region = var.region
 }
 
-resource "aws_vpc" "mpsi_vpc" {
+resource "aws_vpc" "vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 
@@ -20,20 +20,20 @@ resource "aws_vpc" "mpsi_vpc" {
   }
 }
 
-resource "aws_internet_gateway" "mpsi_internet_gateway" {
-  vpc_id = aws_vpc.mpsi_vpc.id
+resource "aws_internet_gateway" "internet_gateway" {
+  vpc_id = aws_vpc.vpc.id
 
   tags = {
     Name = var.tag_name
   }
 }
 
-resource "aws_route_table" "mpsi_route_table" {
-  vpc_id = aws_vpc.mpsi_vpc.id
+resource "aws_route_table" "route_table" {
+  vpc_id = aws_vpc.vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.mpsi_internet_gateway.id
+    gateway_id = aws_internet_gateway.internet_gateway.id
   }
 
   tags = {
@@ -41,23 +41,23 @@ resource "aws_route_table" "mpsi_route_table" {
   }
 }
 
-resource "aws_subnet" "mpsi_subnet" {
+resource "aws_subnet" "subnet" {
   availability_zone = var.availability_zone
   cidr_block        = "10.0.1.0/24"
-  vpc_id            = aws_vpc.mpsi_vpc.id
+  vpc_id            = aws_vpc.vpc.id
 
   tags = {
     Name = var.tag_name
   }
 }
 
-resource "aws_route_table_association" "mpsi_route_table_association" {
-  subnet_id      = aws_subnet.mpsi_subnet.id
-  route_table_id = aws_route_table.mpsi_route_table.id
+resource "aws_route_table_association" "route_table_association" {
+  subnet_id      = aws_subnet.subnet.id
+  route_table_id = aws_route_table.route_table.id
 }
 
-resource "aws_security_group" "mpsi_security_group" {
-  vpc_id = aws_vpc.mpsi_vpc.id
+resource "aws_security_group" "security_group" {
+  vpc_id = aws_vpc.vpc.id
 
   ingress {
     protocol    = "tcp"
@@ -85,7 +85,7 @@ resource "aws_security_group" "mpsi_security_group" {
   }
 }
 
-resource "aws_key_pair" "mpsi_key_pair" {
+resource "aws_key_pair" "key_pair" {
   key_name   = var.key_name
   public_key = var.public_key
 
@@ -94,14 +94,16 @@ resource "aws_key_pair" "mpsi_key_pair" {
   }
 }
 
-resource "aws_spot_instance_request" "mpsi_spot_instance_request" {
+resource "aws_spot_instance_request" "spot_instance_request" {
+  spot_price                  = var.spot_price
   ami                         = var.ami
   associate_public_ip_address = true
   availability_zone           = var.availability_zone
   instance_type               = var.instance_type
   key_name                    = var.key_name
-  subnet_id                   = aws_subnet.mpsi_subnet.id
-  vpc_security_group_ids      = [aws_security_group.mpsi_security_group.id]
+  monitoring                  = true
+  subnet_id                   = aws_subnet.subnet.id
+  vpc_security_group_ids      = [aws_security_group.security_group.id]
 
   tags = {
     Name = var.tag_name

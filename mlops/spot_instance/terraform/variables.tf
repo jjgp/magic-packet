@@ -1,5 +1,4 @@
 variable "ami" {
-  default     = "ami-015b1508a2ff2c65a"
   description = "The AMI to use for the instance"
   type        = string
 }
@@ -27,6 +26,12 @@ variable "public_key" {
 
 variable "region" {
   description = "AWS region"
+  type        = string
+}
+
+variable "spot_price" {
+  default     = null
+  description = "The bid price for the spot instance request"
   type        = string
 }
 
