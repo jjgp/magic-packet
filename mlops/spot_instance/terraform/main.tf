@@ -15,8 +15,6 @@ data "aws_availability_zones" "available" {}
 
 locals {
   availability_zone = data.aws_availability_zones.available.names[0]
-  # Acronym for magic packet spot instance
-  tag_name = "mpsi"
 }
 
 resource "aws_vpc" "mpsi_vpc" {
@@ -24,7 +22,7 @@ resource "aws_vpc" "mpsi_vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = local.tag_name
+    Name = var.tag_name
   }
 }
 
@@ -32,7 +30,7 @@ resource "aws_internet_gateway" "mpsi_internet_gateway" {
   vpc_id = aws_vpc.mpsi_vpc.id
 
   tags = {
-    Name = local.tag_name
+    Name = var.tag_name
   }
 }
 
@@ -45,7 +43,7 @@ resource "aws_route_table" "mpsi_route_table" {
   }
 
   tags = {
-    Name = local.tag_name
+    Name = var.tag_name
   }
 }
 
@@ -55,7 +53,7 @@ resource "aws_subnet" "mpsi_subnet" {
   vpc_id            = aws_vpc.mpsi_vpc.id
 
   tags = {
-    Name = local.tag_name
+    Name = var.tag_name
   }
 }
 
@@ -89,7 +87,7 @@ resource "aws_security_group" "mpsi_security_group" {
   }
 
   tags = {
-    Name = local.tag_name
+    Name = var.tag_name
   }
 }
 
@@ -98,7 +96,7 @@ resource "aws_key_pair" "mpsi_key_pair" {
   public_key = var.public_key
 
   tags = {
-    Name = local.tag_name
+    Name = var.tag_name
   }
 }
 
@@ -112,6 +110,6 @@ resource "aws_spot_instance_request" "mpsi_spot_instance_request" {
   vpc_security_group_ids      = [aws_security_group.mpsi_security_group.id]
 
   tags = {
-    Name = local.tag_name
+    Name = var.tag_name
   }
 }

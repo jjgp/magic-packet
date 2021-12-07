@@ -25,3 +25,8 @@ variable "region" {
   description = "AWS region"
   type        = string
 }
+
+variable "tag_name" {
+  description = "Tag name to put on instances created by this terraform"
+  type        = string
+}
