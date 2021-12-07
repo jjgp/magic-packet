@@ -4,8 +4,12 @@ variable "ami" {
   type        = string
 }
 
+variable "availability_zone" {
+  description = "The availability zone to run the instance"
+  type        = string
+}
+
 variable "instance_type" {
-  default     = "t2.micro"
   description = "The EC2 instance type to use"
   type        = string
 }

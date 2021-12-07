@@ -4,7 +4,7 @@ def variables_dict_to_options(variables):
     return " ".join([arg for tup in zip(flags, values) for arg in tup])
 
 
-def variables_dict_to_tvars(variables, path="terraform.tfvars"):
+def variables_dict_to_tfvars(variables, path="terraform.tfvars"):
     with open(path, "w") as f:
         for key, value in variables.items():
             # TODO: will need to extend this logic for other types

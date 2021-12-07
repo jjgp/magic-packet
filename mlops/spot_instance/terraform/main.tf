@@ -11,12 +11,6 @@ provider "aws" {
   region = var.region
 }
 
-data "aws_availability_zones" "available" {}
-
-locals {
-  availability_zone = data.aws_availability_zones.available.names[0]
-}
-
 resource "aws_vpc" "mpsi_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
@@ -48,7 +42,7 @@ resource "aws_route_table" "mpsi_route_table" {
 }
 
 resource "aws_subnet" "mpsi_subnet" {
-  availability_zone = local.availability_zone
+  availability_zone = var.availability_zone
   cidr_block        = "10.0.1.0/24"
   vpc_id            = aws_vpc.mpsi_vpc.id
 
@@ -103,7 +97,7 @@ resource "aws_key_pair" "mpsi_key_pair" {
 resource "aws_spot_instance_request" "mpsi_spot_instance_request" {
   ami                         = var.ami
   associate_public_ip_address = true
-  availability_zone           = local.availability_zone
+  availability_zone           = var.availability_zone
   instance_type               = var.instance_type
   key_name                    = var.key_name
   subnet_id                   = aws_subnet.mpsi_subnet.id

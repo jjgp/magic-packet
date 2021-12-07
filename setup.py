@@ -8,6 +8,7 @@ extras_require = {
         "boto3 >= 1.20",
         "cryptography >= 36.0",
         "jupyter >= 1.0",
+        "matplotlib >= 3.4",
         # pandas is used by jupyter variables view in vscode interactive python window
         "pandas >= 1.3",
     ],
