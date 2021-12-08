@@ -5,7 +5,6 @@ install_requires = []
 extras_require = {
     "dev": ["black >= 21", "flake8 >= 4.0", "isort >= 5.9", "pre-commit >= 2.16"],
     "mlops": [
-        "boto3 >= 1.20",
         "cryptography >= 36.0",
         "jupyter >= 1.0",
         "matplotlib >= 3.4",
