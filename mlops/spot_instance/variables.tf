@@ -33,11 +33,6 @@ variable "region" {
   type        = string
 }
 
-variable "role_name" {
-  description = "The role for the instance"
-  type        = string
-}
-
 variable "spot_price" {
   default     = null
   description = "The bid price for the spot instance request"

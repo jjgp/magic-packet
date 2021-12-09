@@ -1,28 +1,42 @@
 #!/usr/bin/env bash
 
-# Note that this script assumes:
-# - The device name is /dev/sdh
-# - The user is ubuntu
+availability_zone="${availability_zone}"
+device_name="/dev/sdh"
+device_attached_name="/dev/xvdh"
+instance_id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+mount_dir="/data"
+repository_name="magic-packet"
+repository_url="https://github.com/jjgp/magic-packet"
+username="ubuntu"
+
+# Necessary if the AWS CLI must be installed
+apt-get update && apt-get install -y unzip
+
+# Install AWS CLI
+if ! command -v aws &> /dev/null; then
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    ./aws/install
+    rm -rf awscliv2.zip aws
+fi
 
 # Attach to the EBS volume
-availability_zone="${availability_zone}"
-instance_id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-
 aws ec2 attach-volume \
-	--region $region \
-    --volume-id $volume_id \
+	--region "${region}" \
+    --volume-id "${volume_id}" \
 	--instance-id $instance_id \
-    --device /dev/sdh
+    --device $device_name
 
-aws ec2 wait volume-in-use --volume-ids $volume_id
+aws ec2 wait volume-in-use --volume-ids "${volume_id}"
 
-# Mount the volume
-mkdir /data
-mount /dev/xvdh /data
-chown -R ubuntu: /data
+# Format and mount the volume
+mkfs -t xfs $device_attached_name
+mkdir $mount_dir
+mount $device_attached_name $mount_dir
+chown -R $username: $mount_dir
 
-cd /home/ubuntu
-git clone https://github.com/jjgp/magic-packet
-chown -R ubuntu: magic-packet
+cd /home/$username
+git clone $repository_url
+chown -R $username: $repository_name
 
 # TODO: start Jupyter server

@@ -94,12 +94,63 @@ resource "aws_key_pair" "key_pair" {
   }
 }
 
+resource "aws_iam_role" "iam_role" {
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  tags = {
+    Name = var.tag_name
+  }
+}
+
+resource "aws_iam_role_policy" "iam_role_policy" {
+  role = aws_iam_role.iam_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ec2:AttachVolume",
+          "ec2:CreateSnapshot",
+          "ec2:CreateTags",
+          "ec2:DescribeSnapshots",
+          "ec2:DescribeVolumeStatus",
+          "ec2:DescribeVolumes"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_instance_profile" "iam_instance_profile" {
+  role = aws_iam_role.iam_role.id
+
+  tags = {
+    Name = var.tag_name
+  }
+}
+
 resource "aws_spot_instance_request" "spot_instance_request" {
   spot_price                  = var.spot_price
   ami                         = var.ami
   wait_for_fulfillment        = true
   associate_public_ip_address = true
   availability_zone           = var.availability_zone
+  iam_instance_profile        = aws_iam_instance_profile.iam_instance_profile.name
   instance_type               = var.instance_type
   key_name                    = var.key_name
   monitoring                  = true
@@ -123,27 +174,5 @@ resource "aws_ebs_volume" "ebs_volume" {
 
   tags = {
     Name = var.tag_name
-  }
-}
-
-resource "aws_iam_role" "iam_role" {
-  name = var.role_name
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Sid    = ""
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      },
-    ]
-  })
-
-  tags = {
-    tag-key = var.tag_name
   }
 }
