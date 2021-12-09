@@ -109,3 +109,19 @@ resource "aws_spot_instance_request" "spot_instance_request" {
     Name = var.tag_name
   }
 }
+
+resource "aws_ebs_volume" "ebs_volume" {
+  availability_zone = var.availability_zone
+  size              = var.volume_size
+  type              = "gp2"
+
+  tags = {
+    Name = var.tag_name
+  }
+}
+
+resource "aws_volume_attachment" "volume_attachment" {
+  device_name = "/dev/sdh"
+  volume_id   = aws_ebs_volume.ebs_volume.id
+  instance_id = aws_spot_instance_request.spot_instance_request.spot_instance_id
+}
