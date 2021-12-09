@@ -97,13 +97,19 @@ resource "aws_key_pair" "key_pair" {
 resource "aws_spot_instance_request" "spot_instance_request" {
   spot_price                  = var.spot_price
   ami                         = var.ami
+  wait_for_fulfillment        = true
   associate_public_ip_address = true
   availability_zone           = var.availability_zone
   instance_type               = var.instance_type
   key_name                    = var.key_name
   monitoring                  = true
   subnet_id                   = aws_subnet.subnet.id
-  vpc_security_group_ids      = [aws_security_group.security_group.id]
+  user_data = templatefile("user_data.sh", {
+    availability_zone = var.availability_zone
+    region            = var.region
+    volume_id         = aws_ebs_volume.ebs_volume.id
+  })
+  vpc_security_group_ids = [aws_security_group.security_group.id]
 
   tags = {
     Name = var.tag_name
@@ -120,8 +126,24 @@ resource "aws_ebs_volume" "ebs_volume" {
   }
 }
 
-resource "aws_volume_attachment" "volume_attachment" {
-  device_name = "/dev/sdh"
-  volume_id   = aws_ebs_volume.ebs_volume.id
-  instance_id = aws_spot_instance_request.spot_instance_request.spot_instance_id
+resource "aws_iam_role" "iam_role" {
+  name = var.role_name
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  tags = {
+    tag-key = var.tag_name
+  }
 }
