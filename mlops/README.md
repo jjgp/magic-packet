@@ -2,11 +2,10 @@
 
 ## Getting started
 
-- packer
-- terraform
+To install the pip dependencies make sure to install the `mlops` extras specified in the `setup.py`:
 
-## ami
+```shell
+pip install -e ".[mlops]"
+```
 
-## spot_instance
-
-## utils
+[Terraform](https://www.terraform.io/) is a used to create the cloud infrastructure. Make sure to follow the download instructions [here](https://www.terraform.io/downloads.html)
