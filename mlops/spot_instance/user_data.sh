@@ -1,13 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-availability_zone="${availability_zone}"
-device_name="/dev/sdh"
-device_attached_name="/dev/xvdh"
 instance_id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-mount_dir="/data"
-repository_name="magic-packet"
-repository_url="https://github.com/jjgp/magic-packet"
-username="ubuntu"
 
 # Necessary if the AWS CLI must be installed
 apt-get update && apt-get install -y unzip
@@ -25,18 +18,19 @@ aws ec2 attach-volume \
 	--region "${region}" \
     --volume-id "${volume_id}" \
 	--instance-id $instance_id \
-    --device $device_name
+    --device /dev/sdh
 
-aws ec2 wait volume-in-use --volume-ids "${volume_id}"
+aws ec2 wait volume-in-use \
+    --volume-ids "${volume_id}" \
+    --filters "Name=attachment.status,Values=attached"
 
 # Format and mount the volume
-mkfs -t xfs $device_attached_name
-mkdir $mount_dir
-mount $device_attached_name $mount_dir
-chown -R $username: $mount_dir
+mkfs -t xfs /dev/xvdh
+mkdir /data
+mount /dev/xvdh /data
+chown -R ubuntu: /data
 
-cd /home/$username
-git clone $repository_url
-chown -R $username: $repository_name
-
-# TODO: start Jupyter server
+# Clone repository
+cd /home/ubuntu
+git clone "https://github.com/jjgp/magic-packet"
+chown -R ubuntu: magic-packet

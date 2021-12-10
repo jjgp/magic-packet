@@ -27,9 +27,6 @@ resource "aws_iam_role_policy" "iam_role_policy" {
       {
         Action = [
           "ec2:AttachVolume",
-          "ec2:CreateSnapshot",
-          "ec2:CreateTags",
-          "ec2:DescribeSnapshots",
           "ec2:DescribeVolumeStatus",
           "ec2:DescribeVolumes"
         ]
