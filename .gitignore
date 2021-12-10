@@ -1,0 +1,8 @@
+*.egg-info/
+*.ipynb_checkpoints/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.DS_Store
+.terraform/
+__pycache__/
