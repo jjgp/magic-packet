@@ -6,3 +6,5 @@
 .DS_Store
 .terraform/
 __pycache__/
+data/*
+!data/.gitkeep

@@ -1,0 +1,12 @@
+name: magic-packet
+channels:
+  - apple
+  - conda-forge
+dependencies:
+  - jupyter=1.0.0
+  - pip
+  - tensorboard
+  - tensorflow-deps=2.7.0
+  - pip:
+    - tensorflow-macos==2.7.0
+    - tensorflow-metal==0.3.0
