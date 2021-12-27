@@ -1,0 +1,6 @@
+name: mfa
+channels:
+  - conda-forge
+dependencies:
+  - montreal-forced-aligner=2.0.0b9
+  - python=3.9.7

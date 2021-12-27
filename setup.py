@@ -1,16 +1,14 @@
 from setuptools import setup
 
-install_requires = []
+install_requires = [
+    "jupyter >= 1.0",
+    # pandas is used by jupyter variables view in vscode interactive python window
+    "pandas >= 1.3",
+]
 
 extras_require = {
     "dev": ["black", "flake8 >= 4.0", "isort >= 5.9", "pre-commit >= 2.16"],
-    "mlops": [
-        "cryptography >= 36.0",
-        "jupyter >= 1.0",
-        "matplotlib >= 3.4",
-        # pandas is used by jupyter variables view in vscode interactive python window
-        "pandas >= 1.3",
-    ],
+    "mlops": ["cryptography >= 36.0"],
 }
 
 setup(

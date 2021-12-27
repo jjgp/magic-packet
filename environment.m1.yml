@@ -4,7 +4,9 @@ channels:
   - conda-forge
 dependencies:
   - jupyter=1.0.0
+  - pandas=1.3.5
   - pip
+  - python=3.9.7
   - tensorboard
   - tensorflow-deps=2.7.0
   - pip:
