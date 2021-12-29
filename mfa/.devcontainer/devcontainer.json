@@ -1,6 +1,0 @@
-{
-    "image": "continuumio/miniconda3:latest@sha256:92d7896124d940cb1815d3b59d8eaab9a8e86c801af2437658581465044b0a06",
-    "extensions": ["ms-python.python"],
-    "postCreateCommand": "conda env update --name base --file environment.yml --prune",
-    "runArgs": ["--platform", "linux/amd64"]
-}

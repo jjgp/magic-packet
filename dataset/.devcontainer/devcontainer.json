@@ -1,0 +1,20 @@
+{
+    "image": "jjgp/magic-packet:dataset",
+    "extensions": [
+        "ms-python.python"
+    ],
+    "forwardPorts": [
+        8888
+    ],
+    "portsAttributes": {
+        "8888": {
+            "label": "Jupyter",
+            "requireLocalPort": true,
+            "onAutoForward": "ignore"
+        }
+    },
+    "runArgs": [
+        "--platform",
+        "linux/amd64"
+    ]
+}
