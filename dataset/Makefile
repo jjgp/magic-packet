@@ -1,4 +1,4 @@
-# Jupyter is broken with docker's implementation on QEMU
+# Jupyter is broken for M1 with docker's implementation on QEMU
 # https://tongfamily.com/2021/12/21/docker-on-apple-m1-break-on-jupyter-notebooks-switch-to-podman/
 DOCKER     = podman
 PROJECT    = magic-packet
@@ -14,7 +14,8 @@ Dockerfile:
 
 notebook:
 	$(DOCKER) run --rm --platform linux/amd64 -it \
-		-v $(PWD):/opt/notebooks \
+		-v $(abspath ..)/data:/opt/data \
+		-v $(PWD):/opt/dataset \
 		-p 8888:8888 \
 		$(REPOSITORY)/$(PROJECT):$(TAG) \
 		/bin/bash -c "\
