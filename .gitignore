@@ -6,5 +6,6 @@
 .DS_Store
 .terraform/
 __pycache__/
+Brewfile.lock.json
 data/*
 !data/.gitkeep
