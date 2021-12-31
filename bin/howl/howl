@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+docker run --platform linux/amd64 -it jjgp/magic-packet:howl \
+    python -m training.run.generate_raw_audio_dataset \
+    --help
