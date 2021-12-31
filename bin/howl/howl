@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
 
+usage() { echo "usage: $0 [-v VOLUME] -- [SCRIPT] [OPTIONS]" 1>&2; }
+
+mounts=()
+while getopts ":hv:" opt; do
+  case "${opt}" in
+    v) mounts+=("-${opt} ${OPTARG}") ;;
+    :) echo "howl: option -${OPTARG} requires an argument"; usage; exit 1 ;;
+    h) usage; exit 0 ;;
+    \?) echo "howl: option -${OPTARG} is unknown"; usage; exit 1 ;;
+  esac
+done
+shift $((OPTIND -1))
+
+module=$1; shift
+options=$@
+
 docker run --platform linux/amd64 -it jjgp/magic-packet:howl \
-    python -m training.run.generate_raw_audio_dataset \
-    --help
+    ${mounts:+ "${mounts[@]}"} \
+    python -m $module $options
