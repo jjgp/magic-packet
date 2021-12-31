@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-usage() { echo "usage: $0 [-v VOLUME] -- [SCRIPT] [OPTIONS]" 1>&2; }
+usage() { echo "usage: $0 [-e VAR] [-v VOLUME] -- [SCRIPT] [OPTIONS]" 1>&2; }
 
 mounts=()
+vars=()
 while getopts ":hv:" opt; do
   case "${opt}" in
+    e) vars+=("-${opt} ${OPTARG}") ;;
     v) mounts+=("-${opt} ${OPTARG}") ;;
     :) echo "howl: option -${OPTARG} requires an argument"; usage; exit 1 ;;
     h) usage; exit 0 ;;
@@ -18,4 +20,5 @@ options=$@
 
 docker run --platform linux/amd64 -it jjgp/magic-packet:howl \
     ${mounts:+ "${mounts[@]}"} \
+    ${vars:+ "${vars[@]}"} \
     python -m $module $options

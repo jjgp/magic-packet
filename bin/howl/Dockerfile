@@ -1,6 +1,7 @@
 FROM python:3.6-slim-buster
 
 ARG HOWL_ZIP_URL=https://github.com/castorini/howl/archive/5b9f25869385347ccdc904beccba0f1a9fd495c9.zip
+ARG HOWL_MODELS_ZIP_URL=https://github.com/castorini/howl-models/archive/052041e0f51fc00dc050ecc4f5df8ea57bf2e047.zip
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -14,7 +15,10 @@ RUN apt-get update && apt-get install -y \
 
 RUN curl -L $HOWL_ZIP_URL -o howl.zip \
     && unzip howl.zip \
-    && mv howl-* howl
+    && mv howl-* howl \
+    && curl -L $HOWL_MODELS_ZIP_URL -o howl-models.zip \
+    && unzip howl-models.zip \
+    && mv howl-models-*/* howl/howl-models
 
 WORKDIR /howl
 

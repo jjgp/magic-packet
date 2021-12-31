@@ -2,7 +2,7 @@ PROJECT    = magic-packet
 REPOSITORY = jjgp
 TAG        = howl
 
-.PHONY: clean Dockerfile help push stop
+.PHONY: Dockerfile help push
 
 Dockerfile:
 	docker build --platform linux/amd64 \
