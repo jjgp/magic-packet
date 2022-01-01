@@ -10,7 +10,7 @@ generate_raw_audio_dataset:
 		-e VOCAB=$(VOCAB) \
 		-e INFERENCE_SEQUENCE=$(INFERENCE_SEQUENCE) \
 		-v $(DATA_DIR):/opt/data \
-		-- generate_raw_audio_dataset \
+		-- training.run.generate_raw_audio_dataset \
 		-i /opt/data/$(COMMON_VOICE_DIR) \
 		-o /opt/data/raw_audio_dataset \
 		--positive-pct 100 \

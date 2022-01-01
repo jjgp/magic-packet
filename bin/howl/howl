@@ -4,12 +4,12 @@ usage() { echo "usage: $0 [-e VAR] [-v VOLUME] -- [SCRIPT] [OPTIONS]" 1>&2; }
 
 mounts=()
 vars=()
-while getopts ":hv:" opt; do
+while getopts ":he:v:" opt; do
     case "${opt}" in
-        e) vars+=("-${opt} ${OPTARG}") ;;
-        v) mounts+=("-${opt} ${OPTARG}") ;;
-        :) echo "howl: option -${OPTARG} requires an argument"; usage; exit 1 ;;
+        e) vars+=(-${opt} "${OPTARG}") ;;
         h) usage; exit 0 ;;
+        v) mounts+=(-${opt} "${OPTARG}") ;;
+        :) echo "howl: option -${OPTARG} requires an argument"; usage; exit 1 ;;
         \?) echo "howl: option -${OPTARG} is unknown"; usage; exit 1 ;;
     esac
 done
@@ -18,7 +18,8 @@ shift $((OPTIND -1))
 module=$1; shift
 options=$@
 
-docker run --platform linux/amd64 -it jjgp/magic-packet:howl \
+docker run --platform linux/amd64 \
     ${mounts:+ "${mounts[@]}"} \
     ${vars:+ "${vars[@]}"} \
+    -it jjgp/magic-packet:howl \
     python -m $module $options
