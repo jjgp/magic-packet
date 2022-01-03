@@ -22,11 +22,10 @@ RUN curl -L $HOWL_ZIP_URL -o howl.zip \
 
 WORKDIR /howl
 
-RUN --mount=type=cache,mode=0777,target=/.cache/pip
-
 ENV PATH="/howl/env/bin:$PATH"
 
-RUN python3 -m venv env \
+RUN --mount=type=cache,target=/.cache/pip \
+    python3 -m venv env \
     && pip install --upgrade pip \
     && pip install -r requirements.txt -r requirements_training.txt
 
