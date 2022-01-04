@@ -1,4 +1,5 @@
 COMMON_VOICE_DIRNAME       ?= cv-corpus-7.0-2021-07-21/en
+DOCKER_PLATFORM            ?= linux/amd64
 HOWL_PATH                  ?=
 LEXICON_URL                ?= https://www.openslr.org/resources/11/librispeech-lexicon.txt
 NUM_JOBS                   ?= 8
@@ -7,6 +8,7 @@ VOCAB                      ?= fire
 data_abspath                = $(abspath ./data)
 raw_abspath                 = $(data_abspath)/raw
 dockerfiles                 = $(shell find ./docker -type f -name "*.Dockerfile")
+mfa                         = $(shell command -v mfa)
 negative_abspath	        = $(raw_abspath)/$(VOCAB)/negative
 inference_sequence          = '[$(shell seq -s, 0 $(shell grep -o '_' <<<$(1) | grep -c .) | sed s'/,$$//')]'
 positive_abspath	        = $(raw_abspath)/$(VOCAB)/positive
@@ -14,17 +16,20 @@ positive_alignment_abspath  = $(positive_abspath)/alignment
 repository                  = jjgp/magic-packet
 vocab_sequence              = '["$(shell sed 's/_/","/g' <<<$(1))"]'
 
-ifeq ($(HOWL_PATH),)
-	howl_context           := docker run --platform linux/amd64 \
-    	-v $(data_abspath):$(data_abspath) \
-		-it $(repository):howl
-else
-	howl_context           := cd $(HOWL_PATH) &&
-endif
-MFA                        ?= docker run --platform linux/amd64 -it \
+ifeq ($(mfa),)
+mfa                         = docker run --platform $(DOCKER_PLATFORM) -it \
 	-v $(data_abspath):$(data_abspath) \
 	$(repository):mfa \
 	mfa
+endif
+
+ifeq ($(HOWL_PATH),)
+	howl_context            = docker run --platform $(DOCKER_PLATFORM) \
+    	-v $(data_abspath):$(data_abspath) \
+		-it $(repository):howl
+else
+	howl_context            = cd $(HOWL_PATH) &&
+endif
 
 .PHONY: help
 help:
@@ -41,7 +46,7 @@ help:
 
 .PHONY: $(dockerfiles)
 $(dockerfiles): ./docker/%.Dockerfile:
-	docker build --platform linux/amd64 -t $(repository):$* - < ./docker/$*.Dockerfile
+	docker build --platform $(DOCKER_PLATFORM) -t $(repository):$* - < ./docker/$*.Dockerfile
 
 .PHONY: attach_positive_alignment
 attach_positive_alignment: $(positive_alignment_abspath)
@@ -66,7 +71,7 @@ generate_raw_audio_dataset: $(common_voice_abspath)
 positive_alignment: lexicon_abspath        := $(data_abspath)/lexicon.txt
 positive_alignment: positive_audio_abspath := $(positive_abspath)/audio
 positive_alignment: $(lexicon_abspath) $(positive_audio_abspath)
-	@$(MFA) align --num_jobs $(NUM_JOBS) \
+	@$(mfa) align --num_jobs $(NUM_JOBS) \
 		$(positive_audio_abspath) \
 		$(lexicon_abspath) \
 		english \
