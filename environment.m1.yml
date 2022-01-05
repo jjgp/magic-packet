@@ -14,5 +14,6 @@ dependencies:
   - swig=4.0.2
   - pip:
     - git+https://github.com/jjgp/pocketsphinx-python
+    - webrtcvad==2.0.10
     - -e ./howl
     - montreal-forced-aligner==2.0.0b9

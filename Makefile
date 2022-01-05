@@ -8,8 +8,6 @@ VOCAB                      ?= fire
 data_abspath                = $(abspath ./data)
 raw_abspath                 = $(data_abspath)/raw
 dockerfiles                 = $(shell find ./docker -type f -name "*.Dockerfile")
-howl                        = $(shell pip show howl | grep Location | awk '{ print $2 }')
-mfa                         = $(shell command -v mfa)
 negative_abspath	        = $(raw_abspath)/$(VOCAB)/negative
 inference_sequence          = '[$(shell seq -s, 0 $(shell grep -o '_' <<<$(1) | grep -c .) | sed s'/,$$//')]'
 positive_abspath	        = $(raw_abspath)/$(VOCAB)/positive
@@ -17,20 +15,19 @@ positive_alignment_abspath  = $(positive_abspath)/alignment
 repository                  = jjgp/magic-packet
 vocab_sequence              = '["$(shell sed 's/_/","/g' <<<$(1))"]'
 
-ifeq ($(howl),)
-    howl                    = docker run --platform linux/amd64 \
-        -v $(data_abspath):$(data_abspath) \
-        -it $(repository):howl
-else
-    howl                    = cd $(howl) &&
-endif
+howl_docker                 = docker run --platform linux/amd64 \
+    -v $(data_abspath):$(data_abspath) \
+    -it $(repository):howl
+howl_local                  = $(shell pip show howl | grep Location | awk '{ print $$2 }')
+howl                        = $(if $(howl_local),cd $(howl_local) &&,$(howl_docker)) \
+    env VOCAB=$(call vocab_sequence,$(VOCAB)) INFERENCE_SEQUENCE=$(call inference_sequence,$(VOCAB))
 
-ifeq ($(mfa),)
-    mfa                     = docker run --platform $(DOCKER_PLATFORM) -it \
-        -v $(data_abspath):$(data_abspath) \
-        $(repository):mfa \
-        mfa
-endif
+mfa_docker                  = docker run --platform $(DOCKER_PLATFORM) -it \
+    -v $(data_abspath):$(data_abspath) \
+    $(repository):mfa \
+    mfa
+mfa_local                   = $(shell command -v mfa)
+mfa                         = $(if $(mfa_local),$(mfa_local),$(mfa_docker))
 
 .PHONY: help
 help:
@@ -60,9 +57,7 @@ attach_positive_alignment: $(positive_alignment_abspath)
 .PHONY: generate_raw_audio_dataset
 generate_raw_audio_dataset: common_voice_abspath := $(data_abspath)/$(COMMON_VOICE_DIRNAME)
 generate_raw_audio_dataset: $(common_voice_abspath)
-	@($(howl) env VOCAB=$(call vocab_sequence,$(VOCAB)) \
-		INFERENCE_SEQUENCE=$(call inference_sequence,$(VOCAB)) \
-		python -m training.run.generate_raw_audio_dataset \
+	@($(howl) python -m training.run.generate_raw_audio_dataset \
 		-i $(common_voice_abspath) \
 		-o $(raw_abspath) \
 		--positive-pct 100 \
@@ -80,9 +75,7 @@ positive_alignment: $(lexicon_abspath) $(positive_audio_abspath)
 
 .PHONY: stitch_vocab_samples
 stitch_vocab_samples: $(addprefix $(positive_abspath)/aligned-metadata-,$(addsuffix .jsonl, dev test training))
-	@($(howl) env VOCAB=$(call vocab_sequence,$(VOCAB)) \
-		INFERENCE_SEQUENCE=$(call inference_sequence,$(VOCAB)) \
-		python -m training.run.stitch_vocab_samples \
+	@($(howl) python -m training.run.stitch_vocab_samples \
 		--aligned-dataset $(positive_abspath) \
 		--stitched-dataset $(positive_abspath)/stitched)
 
@@ -91,4 +84,4 @@ stub_negative_alignment: $(negative_abspath)
 	@($(howl) python -m training.run.attach_alignment \
 		--alignment-type stub \
 		--input-raw-audio-dataset $(negative_abspath) \
-		--token-type word
+		--token-type word)
