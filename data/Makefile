@@ -3,7 +3,7 @@ LEXICON_URL                ?= https://www.openslr.org/resources/11/librispeech-l
 NUM_JOBS                   ?= 8
 VOCAB                      ?= fire
 
-inference_sequence          = '[$(shell seq -s, 0 $(shell grep -o '_' <<<$(1) | grep -c .) | sed s'/,$$//')]'
+inference_sequence          = $(shell seq -s, 0 $(shell grep -o '_' <<<$(1) | grep -c .) | sed s'/,$$//')
 raw_dir                     = ./raw
 vocab_dir                   = $(raw_dir)/$(VOCAB)
 negative_aligned_metadata   = $(addprefix $(vocab_dir)/negative/aligned-metadata-,$(addsuffix .jsonl,dev test training))
@@ -11,21 +11,21 @@ positive_dir     	        = $(vocab_dir)/positive
 positive_aligned_metadata   = $(addprefix $(positive_dir)/aligned-metadata-,$(addsuffix .jsonl,dev test training))
 positive_alignment_dir      = $(positive_dir)/alignment
 positive_stitched_dir       = $(positive_dir)/stitched
-vocab_sequence              = '["$(shell sed 's/_/","/g' <<<$(1))"]'
+vocab_sequence              = $(shell sed 's/_/","/g' <<<$(1))
 howl                        = cd $(abspath ../howl) \
-    && VOCAB=$(call vocab_sequence,$(VOCAB)) INFERENCE_SEQUENCE=$(call inference_sequence,$(VOCAB))
+    && VOCAB='["$(call vocab_sequence,$(VOCAB))"]' INFERENCE_SEQUENCE='[$(call inference_sequence,$(VOCAB))]'
 
 .PHONY : all
 all: $(positive_stitched_dir) $(negative_aligned_metadata)
 
 .PHONY: help
 help:
-	@echo "make $(vocab_dir):\n  create positive/negative samples and metadata"
-	@echo "make lexicon.txt:\n  download the lexicon"
-	@echo "make $(positive_alignment_dir):\n  create aligned metadata files"
-	@echo "make $(positive_aligned_metadata):\n  mfa align positive samples"
-	@echo "make $(positive_stitched_dir):\n  stitch aligned positive samples"
-	@echo "make $(negative_aligned_metadata):\n  mock align negative samples"
+	@echo "make $(vocab_dir):\n  Create positive ($(call vocab_sequence,$(VOCAB))) and negative samples/metadata\n"
+	@echo "make lexicon.txt:\n  Download the lexicon\n"
+	@echo "make $(positive_alignment_dir):\n  Create aligned metadata files\n"
+	@echo "make $(positive_aligned_metadata):\n  mfa align positive samples\n"
+	@echo "make $(positive_stitched_dir):\n  Stitch aligned positive samples\n"
+	@echo "make $(negative_aligned_metadata):\n  Stub the alignment of the negative samples"
 
 $(vocab_dir): $(COMMON_VOICE_DIR)
 	@($(howl) python -m training.run.generate_raw_audio_dataset \
