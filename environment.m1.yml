@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - default
 dependencies:
+  - ffmpeg=4.4.1
   - kaldi=5.5.992
   - libsndfile=1.0.31
   - llvmlite=0.37.0
