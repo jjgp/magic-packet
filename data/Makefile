@@ -1,4 +1,4 @@
-COMMON_VOICE_DIR           ?= cv-corpus-7.0-2021-07-21/en
+COMMON_VOICE_DIR           ?= ./cv-corpus-7.0-2021-07-21/en
 LEXICON_URL                ?= https://www.openslr.org/resources/11/librispeech-lexicon.txt
 NUM_JOBS                   ?= 8
 VOCAB                      ?= fire
@@ -28,9 +28,9 @@ help:
 	@echo "make $(negative_aligned_metadata):\n  Stub the alignment of the negative samples"
 
 $(vocab_dir): $(COMMON_VOICE_DIR)
-	@($(howl) python -m training.run.generate_raw_audio_dataset \
-		-i $(COMMON_VOICE_DIR) \
-		-o $(raw_dir) \
+	($(howl) python -m training.run.generate_raw_audio_dataset \
+		-i $(abspath $(COMMON_VOICE_DIR)) \
+		-o $(abspath $(raw_dir)) \
 		--positive-pct 100 \
 		--negative-pct 5)
 
@@ -45,19 +45,19 @@ $(positive_alignment_dir): $(vocab_dir) lexicon.txt
 		$(positive_alignment_dir)
 
 $(positive_aligned_metadata): $(positive_alignment_dir)
-	@($(howl) python -m training.run.attach_alignment \
-		--input-raw-audio-dataset $(positive_dir) \
+	($(howl) python -m training.run.attach_alignment \
+		--input-raw-audio-dataset $(abspath $(positive_dir)) \
   		--token-type word \
   		--alignment-type mfa \
-  		--alignments-path $(positive_alignment_dir))
+  		--alignments-path $(abspath $(positive_alignment_dir)))
 
 $(positive_stitched_dir): $(positive_aligned_metadata)
-	@($(howl) python -m training.run.stitch_vocab_samples \
-		--aligned-dataset $(positive_dir) \
-		--stitched-dataset $(positive_stitched_dir))
+	($(howl) python -m training.run.stitch_vocab_samples \
+		--aligned-dataset $(abspath $(positive_dir)) \
+		--stitched-dataset $(abspath $(positive_stitched_dir)))
 
 $(negative_aligned_metadata): $(vocab_dir)
-	@($(howl) python -m training.run.attach_alignment \
+	($(howl) python -m training.run.attach_alignment \
 		--alignment-type stub \
-		--input-raw-audio-dataset $(vocab_abspath)/negative \
+		--input-raw-audio-dataset $(abspath $(vocab_dir))/negative \
 		--token-type word)
