@@ -1,10 +1,6 @@
 from setuptools import setup
 
-install_requires = [
-    "jupyter >= 1.0",
-    # pandas is used by jupyter variables view in vscode interactive python window
-    "pandas >= 1.3",
-]
+install_requires = []
 
 extras_require = {
     "dev": ["black", "flake8 >= 4.0", "isort >= 5.9", "pre-commit >= 2.16"],
