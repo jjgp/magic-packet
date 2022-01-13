@@ -1,6 +1,8 @@
 from setuptools import setup
 
-install_requires = []
+install_requires = [
+    "tensorflow >= 2.6.0",
+]
 
 extras_require = {
     "dev": ["black", "flake8 >= 4.0", "isort >= 5.9", "pre-commit >= 2.16"],
