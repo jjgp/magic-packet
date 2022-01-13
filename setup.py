@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 install_requires = [
     "tensorflow >= 2.6.0",
@@ -17,4 +17,6 @@ setup(
     description="Wake word detection",
     install_requires=install_requires,
     extras_require=extras_require,
+    packages=find_packages(),
+    python_requires=">=3.7",
 )
