@@ -14,5 +14,7 @@ dependencies:
   - seaborn=0.11.2
   - tensorflow-deps=2.6.0
   - pip:
+    - pydub==0.25.1
+    - tensorflow-datasets==4.4.0
     - tensorflow-macos==2.6.0
     - tensorflow-metal==0.2.0
