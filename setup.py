@@ -1,7 +1,9 @@
 from setuptools import find_packages, setup
 
 install_requires = [
-    "tensorflow >= 2.6.0",
+    "pydub >= 0.25",
+    "tensorflow >= 2.6",
+    "tensorflow-datasets >= 4.4",
 ]
 
 extras_require = {
