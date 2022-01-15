@@ -34,20 +34,28 @@ def mfcc(
     return tf.signal.mfccs_from_log_mel_spectrograms(log_mel_spectrogram)[..., :n_mfcc]
 
 
+def normalize(y):
+    return tf.cast(y, dtype=tf.float32) / 32768.0
+
+
 def spectrogram(y, n_samples=16000, n_fft=255, hop_length=128):
     """
     https://www.tensorflow.org/tutorials/audio/simple_audio#convert_waveforms_to_spectrograms
     """
 
     y = y[:n_samples]
-    zero_padding = tf.zeros([n_samples] - tf.shape(y), dtype=tf.float32)
-    y = tf.cast(y, dtype=tf.float32)
-    # Concatenate the waveform with `zero_padding`, which ensures all audio
-    # clips are of the same length.
-    padded = tf.concat([y, zero_padding], 0)
+    padded = zero_padding(y, n_samples)
     # Convert the waveform to a spectrogram via a STFT.
     stft = tf.signal.stft(
         padded, frame_length=n_fft, frame_step=hop_length, fft_length=n_fft
     )
     # Obtain the magnitude of the STFT.
     return tf.abs(stft)
+
+
+def zero_padding(y, n_samples):
+    zero_padding = tf.zeros([n_samples] - tf.shape(y), dtype=tf.float32)
+    y = tf.cast(y, dtype=tf.float32)
+    # Concatenate the waveform with `zero_padding`, which ensures all audio
+    # clips are of the same length.
+    return tf.concat([y, zero_padding], 0)
