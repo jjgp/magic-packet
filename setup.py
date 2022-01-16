@@ -4,6 +4,7 @@ install_requires = [
     "pydub >= 0.25",
     "tensorflow >= 2.6",
     "tensorflow-datasets >= 4.4",
+    "tqdm >= 4.62",
 ]
 
 extras_require = {
