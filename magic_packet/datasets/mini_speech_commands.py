@@ -5,6 +5,7 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 from tensorflow_datasets.core import lazy_imports_lib
 
+
 _DOWNLOAD_PATH = "https://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip"  # noqa: E501
 _EXAMPLES_SUBDIR = "mini_speech_commands"
 _HOMEPAGE = "https://www.tensorflow.org/tutorials/audio/simple_audio#import_the_mini_speech_commands_dataset"  # noqa: E501
