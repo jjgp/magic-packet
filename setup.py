@@ -12,7 +12,7 @@ extras_require = {
 }
 
 setup(
-    name="magicpacket",
+    name="magic-packet",
     version="0.0.1",
     url="https://github.com/jjgp/magic-packet",
     author="Jason Prasad",
