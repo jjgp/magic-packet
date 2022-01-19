@@ -31,9 +31,11 @@ def _insert_tsv_contents(tsv_file, db_manager):
     text_wrapper = io.TextIOWrapper(tsv_file, encoding="utf-8")
     tsv = csv.DictReader(text_wrapper, delimiter="\t")
 
+    # TODO: parameterize the language
     # TODO: use tqdm here to show progress
     for row in tsv:
-        print(row)
+        sentence = row["sentence"].lower()
+        print(sentence)
 
 
 def _parser():
