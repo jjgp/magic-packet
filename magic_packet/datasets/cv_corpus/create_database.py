@@ -7,7 +7,7 @@ import string
 import tarfile
 
 import tensorflow as tf
-from database_manager import DatabaseManager
+from database_manager import ClipsTable, DatabaseManager, WordsTable
 from tqdm import tqdm
 
 _SPLITS = ["train", "dev", "test"]
@@ -15,22 +15,20 @@ _SPLITS = ["train", "dev", "test"]
 
 def main(tar, database, overwrite):
     if not tarfile.is_tarfile(tar):
+        # TODO: logger early exit
         return
 
-    if os.path.exists(database) and not overwrite:
-        pass
+    database_exists = os.path.exists(database)
+    if database_exists and not overwrite:
+        # TODO: logger early exit
+        return
 
-    # TODO: create tsv table in db
     with DatabaseManager(database) as db_manager, tf.io.gfile.GFile(
         tar, "rb"
     ) as gfile, tarfile.open(mode="r:*", fileobj=gfile) as tar:
-        # TODO: don't use _cur directly
-        db_manager._cur.execute(
-            "create table clips (id integer primary key, split varchar, name varchar)"
-        )
-        db_manager._cur.execute(
-            "create table words (clip_id integer, loc integer, word varchar)"
-        )
+        if database_exists:
+            db_manager.drop_tables()
+        db_manager.create_tables()
 
         splits_left = len(_SPLITS)
         while splits_left:
@@ -58,7 +56,6 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
     io_wrapper.seek(0)
     reader = csv.DictReader(io_wrapper, delimiter="\t")
 
-    # TODO: use tqdm here to show progress
     p = re.compile(r"^[a-zA-Z_]+(\d+)\.mp3$")
     for row in tqdm(reader, desc=f"inserting {split} ", total=total):
         path, sentence = row["path"], row["sentence"].lower()
@@ -66,12 +63,9 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
         if not match:
             continue
         clip_id = match.group(1)
-        db_manager._cur.execute(
-            "insert into clips values (?, ?, ?)", (clip_id, split, path)
-        )
+        db_manager.insert(ClipsTable.name, (clip_id, split, path))
         words = ((clip_id, loc, word) for loc, word in _iter_words(sentence))
-        db_manager._cur.executemany("insert into words values (?, ?, ?)", words)
-    db_manager._conn.commit()
+        db_manager.insert_many(WordsTable.name, words)
 
 
 def _parser():
