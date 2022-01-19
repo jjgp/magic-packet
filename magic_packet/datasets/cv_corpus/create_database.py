@@ -2,45 +2,76 @@ import argparse
 import csv
 import io
 import os
+import re
+import string
 import tarfile
 
 import tensorflow as tf
 from database_manager import DatabaseManager
 from tqdm import tqdm
 
-_SPLIT_FILES = ["train.tsv", "dev.tsv", "test.tsv"]
+_SPLITS = ["train", "dev", "test"]
 
 
 def main(tar, database, overwrite):
     if not tarfile.is_tarfile(tar):
         return
 
-    if os.path.exists(database) and overwrite:
-        # TODO: something to overwrite database
+    if os.path.exists(database) and not overwrite:
         pass
 
+    # TODO: create tsv table in db
     with DatabaseManager(database) as db_manager, tf.io.gfile.GFile(
         tar, "rb"
-    ) as fobj, tarfile.open(mode="r:*", fileobj=fobj) as tar:
-        # TODO: create tsv table in db
-        for member in tar:
-            if "tsv" in member.name and os.path.basename(member.name) in _SPLIT_FILES:
-                _insert_tsv_contents(tar.extractfile(member), db_manager)
-            elif "clips" in member.name and member.name.endswith(".mp3"):
-                pass
+    ) as gfile, tarfile.open(mode="r:*", fileobj=gfile) as tar:
+        # TODO: don't use _cur directly
+        db_manager._cur.execute(
+            "create table clips (id integer primary key, split varchar, name varchar)"
+        )
+        db_manager._cur.execute(
+            "create table words (clip_id integer, loc integer, word varchar)"
+        )
+
+        splits_left = len(_SPLITS)
+        while splits_left:
+            member = tar.next()
+            basename = os.path.basename(member.name)
+            if "tsv" not in basename:
+                continue
+
+            split = os.path.splitext(basename)[0]
+            if split in _SPLITS:
+                tsv_fobj = tar.extractfile(member)
+                _insert_split_into_database(split, tsv_fobj, db_manager)
+                splits_left -= 1
 
 
-def _insert_tsv_contents(tsv_file, db_manager):
-    text_wrapper = io.TextIOWrapper(tsv_file, encoding="utf-8")
-    total = sum(1 for _ in text_wrapper) - 1  # -1 for header
-    text_wrapper.seek(0)
-    reader = csv.DictReader(text_wrapper, delimiter="\t")
+def _iter_words(sentence):
+    for loc, word in enumerate(sentence.split()):
+        without_punctuation = word.strip(string.punctuation)
+        yield loc, without_punctuation
 
-    # TODO: parameterize the language
+
+def _insert_split_into_database(split, tsv_fobj, db_manager):
+    io_wrapper = io.TextIOWrapper(tsv_fobj, encoding="utf-8")
+    total = sum(1 for _ in io_wrapper) - 1  # -1 for header
+    io_wrapper.seek(0)
+    reader = csv.DictReader(io_wrapper, delimiter="\t")
+
     # TODO: use tqdm here to show progress
-
-    for row in tqdm(reader, desc="inserting rows", total=total):
-        _ = row["sentence"].lower()
+    p = re.compile(r"^[a-zA-Z_]+(\d+)\.mp3$")
+    for row in tqdm(reader, desc=f"inserting {split} ", total=total):
+        path, sentence = row["path"], row["sentence"].lower()
+        match = p.match(path)
+        if not match:
+            continue
+        clip_id = match.group(1)
+        db_manager._cur.execute(
+            "insert into clips values (?, ?, ?)", (clip_id, split, path)
+        )
+        words = ((clip_id, loc, word) for loc, word in _iter_words(sentence))
+        db_manager._cur.executemany("insert into words values (?, ?, ?)", words)
+    db_manager._conn.commit()
 
 
 def _parser():
@@ -64,6 +95,6 @@ if __name__ == "__main__":
 
     main(
         "./data/cv-corpus-7.0-2021-07-21-en.tar.gz",
-        "./data/cv-corpus-7.0-2021-07-21-en.db",
+        "./data/cv-corpus-7.0-2021-07-21/en/index.db",
         True,
     )
