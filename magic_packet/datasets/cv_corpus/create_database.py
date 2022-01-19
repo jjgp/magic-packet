@@ -6,6 +6,7 @@ import tarfile
 
 import tensorflow as tf
 from database_manager import DatabaseManager
+from tqdm import tqdm
 
 _SPLIT_FILES = ["train.tsv", "dev.tsv", "test.tsv"]
 
@@ -25,17 +26,21 @@ def main(tar, database, overwrite):
         for member in tar:
             if "tsv" in member.name and os.path.basename(member.name) in _SPLIT_FILES:
                 _insert_tsv_contents(tar.extractfile(member), db_manager)
+            elif "clips" in member.name and member.name.endswith(".mp3"):
+                pass
 
 
 def _insert_tsv_contents(tsv_file, db_manager):
     text_wrapper = io.TextIOWrapper(tsv_file, encoding="utf-8")
-    tsv = csv.DictReader(text_wrapper, delimiter="\t")
+    total = sum(1 for _ in text_wrapper) - 1  # -1 for header
+    text_wrapper.seek(0)
+    reader = csv.DictReader(text_wrapper, delimiter="\t")
 
     # TODO: parameterize the language
     # TODO: use tqdm here to show progress
-    for row in tsv:
-        sentence = row["sentence"].lower()
-        print(sentence)
+
+    for row in tqdm(reader, desc="inserting rows", total=total):
+        _ = row["sentence"].lower()
 
 
 def _parser():
