@@ -1,5 +1,7 @@
 from typing import NamedTuple, get_type_hints
 
+from database_manager import DatabaseManager
+
 
 def SQLTable(primary_keys=[]):
     def _decorator(_namedtuple):
@@ -48,17 +50,36 @@ class Words(NamedTuple):
     word: str
 
 
-def SQLInnerJoin(on, *tables):
+def SQLInnerJoin(a, b, on):
     def _decorator(_namedtuple):
+        def _sql_join(where):
+            sql = f"""
+            select {", ".join(_namedtuple._fields)}
+            from {a.__name__.lower()}
+            inner join {b.__name__.lower()}
+            on {on}
+            """
+            if where:
+                sql += f"where {where}"
+            return sql
+
+        setattr(_namedtuple, _sql_join.__name__, _sql_join)
         return _namedtuple
 
     return _decorator
 
 
-@SQLInnerJoin("clip_id = id", Clips, Words)
-class WordsInClips(NamedTuple):
+@SQLInnerJoin(Words, Clips, on="clip_id = id")
+class WordsOnClips(NamedTuple):
     clip_id: int
     fname: str
     loc: int
     word: str
     split: str
+
+
+if __name__ == "__main__":
+    database = "./data/cv-corpus-7.0-2021-07-21/en/index.db"
+    with DatabaseManager(database) as db_manager:
+        result = db_manager.join(WordsOnClips, where="word = 'fox'")
+        print(result)

@@ -31,3 +31,7 @@ class DatabaseManager:
 
     def insertmany(self, records):
         self._cur.executemany(records[0]._sql_insert(), records)
+
+    def join(self, record, where=None):
+        self._cur.execute(record._sql_join(where))
+        return map(record._make, self._cur.fetchall())
