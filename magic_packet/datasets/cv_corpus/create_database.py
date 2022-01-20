@@ -1,71 +1,76 @@
 import argparse
 import csv
 import io
+import logging
 import os
 import re
 import string
 import tarfile
 
 import tensorflow as tf
-from database_manager import ClipsTable, DatabaseManager, WordsTable
+from database.database_manager import DatabaseManager
+from database.records import Clips, Words
 from tqdm import tqdm
 
-_SPLITS = ["train", "dev", "test"]
+logger = logging.getLogger(__name__)
 
 
-def main(tar, database, overwrite):
+def main(tar, database, overwrite, splits):
     if not tarfile.is_tarfile(tar):
-        # TODO: logger early exit
+        logger.error(f"{tar} is not a tar file")
         return
 
     database_exists = os.path.exists(database)
     if database_exists and not overwrite:
-        # TODO: logger early exit
+        logger.error(f"Database {database} exists and overwrite is {overwrite}")
         return
 
     with DatabaseManager(database) as db_manager, tf.io.gfile.GFile(
         tar, "rb"
     ) as gfile, tarfile.open(mode="r:*", fileobj=gfile) as tar:
         if database_exists:
-            db_manager.drop_tables()
-        db_manager.create_tables()
+            db_manager.drop(Clips, Words)
+        db_manager.create(Clips, Words)
 
-        splits_left = len(_SPLITS)
-        while splits_left:
+        n_splits = len(splits)
+        while n_splits:
             member = tar.next()
             basename = os.path.basename(member.name)
             if "tsv" not in basename:
                 continue
 
             split = os.path.splitext(basename)[0]
-            if split in _SPLITS:
+            if split in splits:
                 tsv_fobj = tar.extractfile(member)
                 _insert_split_into_database(split, tsv_fobj, db_manager)
-                splits_left -= 1
+                n_splits -= 1
 
-
-def _iter_words(sentence):
-    for loc, word in enumerate(sentence.split()):
-        without_punctuation = word.strip(string.punctuation)
-        yield loc, without_punctuation
+        db_manager.commit()
 
 
 def _insert_split_into_database(split, tsv_fobj, db_manager):
     io_wrapper = io.TextIOWrapper(tsv_fobj, encoding="utf-8")
-    total = sum(1 for _ in io_wrapper) - 1  # -1 for header
+    total = sum(1 for _ in io_wrapper) - 1  # -1 for TSV header
     io_wrapper.seek(0)
     reader = csv.DictReader(io_wrapper, delimiter="\t")
 
-    p = re.compile(r"^[a-zA-Z_]+(\d+)\.mp3$")
-    for row in tqdm(reader, desc=f"inserting {split} ", total=total):
-        path, sentence = row["path"], row["sentence"].lower()
-        match = p.match(path)
+    clip_id_pattern = re.compile(r"^[a-zA-Z_]+(\d+)\.mp3$")
+    for row in tqdm(reader, desc=f"Inserting {split} into database", total=total):
+        fname, sentence = row["path"], row["sentence"].lower()
+        match = clip_id_pattern.match(fname)
         if not match:
             continue
+
         clip_id = match.group(1)
-        db_manager.insert(ClipsTable.name, (clip_id, split, path))
-        words = ((clip_id, loc, word) for loc, word in _iter_words(sentence))
-        db_manager.insert_many(WordsTable.name, words)
+        words = [
+            Words(clip_id, loc, word.strip(string.punctuation))
+            for loc, word in enumerate(sentence.split())
+        ]
+        if not words:
+            continue
+
+        db_manager.insert(Clips(clip_id, fname, split))
+        db_manager.insertmany(words)
 
 
 def _parser():
@@ -80,15 +85,15 @@ def _parser():
         action=argparse.BooleanOptionalAction,
         help="overwrite existing database if it exists",
     )
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        default=["train", "dev", "test"],
+        help="the splits to include in the database",
+    )
     return parser
 
 
 if __name__ == "__main__":
-    # args = _parser().parse_args()
-    # main(args.tar, args.database)
-
-    main(
-        "./data/cv-corpus-7.0-2021-07-21-en.tar.gz",
-        "./data/cv-corpus-7.0-2021-07-21/en/index.db",
-        True,
-    )
+    args = _parser().parse_args()
+    main(args.tar, args.database, args.overwrite, args.splits)
