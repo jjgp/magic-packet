@@ -3,6 +3,7 @@ COMMON_VOICE_VERS ?= 7.0-2021-07-21
 LEXICON_URL       ?= https://www.openslr.org/resources/11/librispeech-lexicon.txt
 
 corpus_archive     = cv-corpus-$(COMMON_VOICE_VERS)-$(COMMON_VOICE_LANG).tar.gz
+corpus_db          = cv-corpus-$(COMMON_VOICE_VERS)-$(COMMON_VOICE_LANG).db
 corpus_dir         = cv-corpus-$(COMMON_VOICE_VERS)/$(COMMON_VOICE_LANG)
 conda_run_mfa      = conda run --no-capture-output -n mfa mfa
 mfa                = $(if $(shell command -v mfa),mfa,$(conda_run_mfa))
@@ -21,6 +22,13 @@ $(corpus_archive):
 		$(abspath .) \
 		--lang=$(COMMON_VOICE_LANG) \
 		--version=$(COMMON_VOICE_VERS)
+
+$(corpus_db):
+	$(python) magic_packet.datasets.cv_corpus.create_database \
+		$(abspath $(corpus_archive)) \
+		$(abspath $(corpus_db)) \
+		--overwrite \
+		--splits train dev test
 
 $(corpus_dir):
 	tar -xzf $(corpus_archive)

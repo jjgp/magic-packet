@@ -1,7 +1,5 @@
 from typing import NamedTuple, get_type_hints
 
-from database_manager import DatabaseManager
-
 
 def SQLTable(primary_keys=[]):
     def _decorator(_namedtuple):
@@ -76,10 +74,3 @@ class WordsOnClips(NamedTuple):
     loc: int
     word: str
     split: str
-
-
-if __name__ == "__main__":
-    database = "./data/cv-corpus-7.0-2021-07-21/en/index.db"
-    with DatabaseManager(database) as db_manager:
-        result = db_manager.join(WordsOnClips, where="word = 'fox'")
-        print(result)

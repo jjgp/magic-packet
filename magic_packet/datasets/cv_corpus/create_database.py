@@ -8,9 +8,10 @@ import string
 import tarfile
 
 import tensorflow as tf
-from database.database_manager import DatabaseManager
-from database.records import Clips, Words
 from tqdm import tqdm
+
+from magic_packet.datasets.cv_corpus.database.database_manager import DatabaseManager
+from magic_packet.datasets.cv_corpus.database.records import Clips, Words
 
 logger = logging.getLogger(__name__)
 
