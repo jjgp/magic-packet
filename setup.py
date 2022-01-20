@@ -9,6 +9,7 @@ install_requires = [
 
 extras_require = {
     "dev": ["black", "flake8 >= 4.0", "isort >= 5.9", "pre-commit >= 2.16"],
+    "mlops": ["cryptography >= 36.0"],
 }
 
 setup(
