@@ -6,8 +6,7 @@ VOCAB             ?= hey fire fox
 corpus_archive     = cv-corpus-$(COMMON_VOICE_VERS)-$(COMMON_VOICE_LANG).tar.gz
 corpus_dir         = cv-corpus-$(COMMON_VOICE_VERS)/$(COMMON_VOICE_LANG)
 corpus_db          = $(corpus_dir).db
-conda_run_mfa      = conda run --no-capture-output -n mfa mfa
-mfa                = $(if $(shell command -v mfa),mfa,$(conda_run_mfa))
+mfa                = $(shell command -v mfa)
 pythonpath         = $(abspath ..)
 python             = PYTHONPATH=$(pythonpath) python -m
 
@@ -40,6 +39,8 @@ extract_clips:
 		$(abspath $(corpus_dir)) \
 		$(abspath $(corpus_db)) \
 		--vocab $(VOCAB)
+
+# TODO: mfa model download is a dependency
 
 # $(foreach word,$(VOCAB),$(corpus_dir)/$(word)):
 # 	echo $(VOCAB)
