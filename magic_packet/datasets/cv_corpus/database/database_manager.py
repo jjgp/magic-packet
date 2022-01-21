@@ -20,18 +20,18 @@ class DatabaseManager:
 
     def create(self, *records):
         for record in records:
-            self._cur.execute(record._sql_create())
+            self._cur.execute(record._sql.create())
 
     def drop(self, *records):
         for record in records:
-            self._cur.execute(record._sql_drop())
+            self._cur.execute(record._sql.drop())
 
     def insert(self, record):
-        self._cur.execute(record._sql_insert(), record)
+        self._cur.execute(record._sql.insert(), record)
 
     def insertmany(self, records):
-        self._cur.executemany(records[0]._sql_insert(), records)
+        self._cur.executemany(records[0]._sql.insert(), records)
 
     def join(self, record, where=None):
-        self._cur.execute(record._sql_join(where))
+        self._cur.execute(record._sql.join(where))
         return map(record._make, self._cur.fetchall())

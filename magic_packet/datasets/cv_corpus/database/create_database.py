@@ -10,8 +10,10 @@ import tarfile
 import tensorflow as tf
 from tqdm import tqdm
 
-from magic_packet.datasets.cv_corpus.database.database_manager import DatabaseManager
-from magic_packet.datasets.cv_corpus.database.records import Clips, Words
+from .database_manager import DatabaseManager
+from .records import Clips, Words
+
+_EMPTY_SENTENCE_TOKEN = "[empty]"
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +58,7 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
     reader = csv.DictReader(io_wrapper, delimiter="\t")
 
     clip_id_pattern = re.compile(r"^[a-zA-Z_]+(\d+)\.mp3$")
-    for row in tqdm(reader, desc=f"Inserting {split} into database", total=total):
+    for row in tqdm(reader, desc=f"Inserting {split} split into database", total=total):
         fname, sentence = row["path"], row["sentence"].lower()
         match = clip_id_pattern.match(fname)
         if not match:
@@ -66,9 +68,7 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
         words = [
             Words(clip_id, loc, word.strip(string.punctuation))
             for loc, word in enumerate(sentence.split())
-        ]
-        if not words:
-            continue
+        ] or [Words(clip_id, -1, _EMPTY_SENTENCE_TOKEN)]
 
         db_manager.insert(Clips(clip_id, fname, split))
         db_manager.insertmany(words)

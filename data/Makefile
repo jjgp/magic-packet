@@ -1,10 +1,11 @@
 COMMON_VOICE_LANG ?= en
 COMMON_VOICE_VERS ?= 7.0-2021-07-21
 LEXICON_URL       ?= https://www.openslr.org/resources/11/librispeech-lexicon.txt
+# VOCAB             ?= hey fire fox
 
 corpus_archive     = cv-corpus-$(COMMON_VOICE_VERS)-$(COMMON_VOICE_LANG).tar.gz
-corpus_db          = cv-corpus-$(COMMON_VOICE_VERS)-$(COMMON_VOICE_LANG).db
 corpus_dir         = cv-corpus-$(COMMON_VOICE_VERS)/$(COMMON_VOICE_LANG)
+corpus_db          = $(corpus_dir).db
 conda_run_mfa      = conda run --no-capture-output -n mfa mfa
 mfa                = $(if $(shell command -v mfa),mfa,$(conda_run_mfa))
 pythonpath         = $(abspath ..)
@@ -24,22 +25,25 @@ $(corpus_archive):
 		--version=$(COMMON_VOICE_VERS)
 
 $(corpus_db):
-	$(python) magic_packet.datasets.cv_corpus.create_database \
+	$(python) magic_packet.datasets.cv_corpus.database.create_database \
 		$(abspath $(corpus_archive)) \
 		$(abspath $(corpus_db)) \
 		--overwrite \
 		--splits train dev test
 
 $(corpus_dir):
-	tar -xzf $(corpus_archive)
+	mkdir -p $(corpus_dir)
 
-$(corpus_dir)/alignments: N_JOBS ?= 8
-$(corpus_dir)/alignments: $(corpus_dir) lexicon.txt
-	yes n | $(mfa) align --num_jobs $(N_JOBS) \
-		$(corpus_dir)/clips \
-		lexicon.txt \
-		english \
-		$@
+# $(foreach word,$(VOCAB),$(corpus_dir)/$(word)):
+# 	echo $(VOCAB)
+
+# $(corpus_dir)/alignments: N_JOBS ?= 8
+# $(corpus_dir)/alignments: $(corpus_dir) lexicon.txt
+# 	yes n | $(mfa) align --num_jobs $(N_JOBS) \
+# 		$(corpus_dir)/clips \
+# 		lexicon.txt \
+# 		english \
+# 		$@
 
 lexicon.txt:
 	curl $(LEXICON_URL) -o $@
