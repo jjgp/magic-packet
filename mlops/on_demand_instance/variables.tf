@@ -1,9 +1,3 @@
-variable "ami" {
-  default     = "ami-029536273cb04d4d9"
-  description = "The AMI to use for the instance"
-  type        = string
-}
-
 variable "availability_zone" {
   default     = "us-east-1a"
   description = "The availability zone to run the instance"

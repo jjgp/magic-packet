@@ -11,6 +11,22 @@ provider "aws" {
   region = var.region
 }
 
+data "aws_ami" "ami" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["Deep Learning AMI (Ubuntu 18.04) Version 55.0"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["amazon"]
+}
+
 resource "aws_vpc" "vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
@@ -96,7 +112,7 @@ resource "aws_key_pair" "key_pair" {
 
 resource "aws_spot_instance_request" "spot_instance_request" {
   spot_price                  = var.spot_price
-  ami                         = var.ami
+  ami                         = data.aws_ami.ami.id
   wait_for_fulfillment        = true
   associate_public_ip_address = true
   availability_zone           = var.availability_zone
