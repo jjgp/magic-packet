@@ -32,3 +32,9 @@ variable "tag_name" {
   description = "Tag name to put on instances created by this terraform"
   type        = string
 }
+
+variable "volume_size" {
+  default     = "8"
+  description = "The root volume size for the instance"
+  type        = string
+}

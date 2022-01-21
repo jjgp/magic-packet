@@ -40,7 +40,7 @@ variable "tag_name" {
 }
 
 variable "volume_size" {
-  default     = "1"
-  description = "The EBS volume size to create and attache to the instance"
+  default     = "8"
+  description = "The EBS volume size to create and attach to the instance"
   type        = string
 }

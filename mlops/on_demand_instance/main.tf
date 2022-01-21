@@ -121,6 +121,10 @@ resource "aws_instance" "instance" {
   user_data                   = file("user_data.sh")
   vpc_security_group_ids      = [aws_security_group.security_group.id]
 
+  root_block_device {
+    volume_size = var.volume_size
+  }
+
   tags = {
     Name = var.tag_name
   }
