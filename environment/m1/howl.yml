@@ -4,6 +4,7 @@ channels:
   - default
 dependencies:
   - ffmpeg=4.4.1
+  - libsndfile=1.0.31
   - llvmlite=0.37.0
   - numba=0.54.1
   - pip=21.3.1
