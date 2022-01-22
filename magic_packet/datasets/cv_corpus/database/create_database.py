@@ -44,8 +44,8 @@ def main(tar, database, overwrite, splits):
 
             split = os.path.splitext(basename)[0]
             if split in splits:
-                tsv_fobj = tar.extractfile(member)
-                _insert_split_into_database(split, tsv_fobj, db_manager)
+                with tar.extractfile(member) as tsv_fobj:
+                    _insert_split_into_database(split, tsv_fobj, db_manager)
                 n_splits -= 1
 
         db_manager.commit()
