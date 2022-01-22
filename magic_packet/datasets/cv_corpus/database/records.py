@@ -4,19 +4,19 @@ _DECORATED_ATTR = "_sql"
 
 
 class SQL:
-    def inner_joinattr(self, a, b, select, on):
-        def inner_join(where=None):
+    def joinattr(self, a, b, join_type, select, on):
+        def join(where=None):
             sql = f"""
             select {select}
             from {a}
-            inner join {b}
+            {join_type} join {b}
             on {on}
             """
             if where:
                 sql += f"where {where}"
             return sql
 
-        setattr(self, inner_join.__name__, inner_join)
+        setattr(self, join.__name__, join)
 
     def tableattr(self, name, columns, annotations, primary_keys):
         self.n_cols = len(columns)
@@ -72,9 +72,10 @@ def sql_inner_join(record_a, record_b, on):
             _sql = SQL()
             setattr(_namedtuple, _DECORATED_ATTR, _sql)
 
-        _sql.inner_joinattr(
+        _sql.joinattr(
             record_a.__name__.lower(),
             record_b.__name__.lower(),
+            "inner",
             select=", ".join(_namedtuple._fields),
             on=on,
         )

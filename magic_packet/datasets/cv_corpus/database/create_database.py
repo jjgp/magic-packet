@@ -10,6 +10,8 @@ import tarfile
 import tensorflow as tf
 from tqdm import tqdm
 
+from magic_packet.utils import argtype
+
 from .database_manager import DatabaseManager
 from .records import Clips, Words
 
@@ -19,10 +21,6 @@ logger = logging.getLogger(__name__)
 
 
 def main(tar, database, overwrite, splits):
-    if not tarfile.is_tarfile(tar):
-        logger.error(f"{tar} is not a tar file")
-        return
-
     database_exists = os.path.exists(database)
     if database_exists and not overwrite:
         logger.error(f"Database {database} exists and overwrite is {overwrite}")
@@ -78,8 +76,10 @@ def _parser():
     parser = argparse.ArgumentParser(
         description="create the database for the common voice archive contents"
     )
-    parser.add_argument("tar", type=str, help="the common voice archive file")
-    parser.add_argument("database", type=str, help="the common voice archive file")
+    parser.add_argument(
+        "tar", type=argtype.tarfile, help="the path to the common voice archive file"
+    )
+    parser.add_argument("database", type=str, help="the path to the corpus database")
     parser.add_argument(
         "--overwrite",
         default=False,
