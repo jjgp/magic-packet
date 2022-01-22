@@ -53,7 +53,7 @@ def main(tar, database, overwrite, splits):
 
 def _insert_split_into_database(split, tsv_fobj, db_manager):
     io_wrapper = io.TextIOWrapper(tsv_fobj, encoding="utf-8")
-    total = sum(1 for _ in io_wrapper) - 1  # -1 for TSV header
+    total = sum(1 for _ in io_wrapper) - 1  # - 1 for TSV header
     io_wrapper.seek(0)
     reader = csv.DictReader(io_wrapper, delimiter="\t")
 
