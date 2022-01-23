@@ -10,14 +10,14 @@ from magic_packet.utils import argtype
 
 
 def extract_clips(clips, archive, output_directory):
-    n_clips = len(clips)
+    clips_map = {clip.fname: clip.sentence for clip in clips}
+
+    n_clips = len(clips_map)
     if not n_clips:
         raise ValueError("No clips provided")
 
     if not os.path.exists(output_directory):
         os.mkdir(output_directory)
-
-    clips_map = {clip.fname: clip.sentence for clip in clips}
 
     with tqdm(
         total=n_clips, desc="Extracting audio from archive and writing .lab files"
@@ -28,24 +28,22 @@ def extract_clips(clips, archive, output_directory):
             if fname in clips_map:
                 member.name = fname  # extract only the basename instead of to full path
                 output_path = os.path.join(output_directory, fname)
-                if not os.path.exists(output_path):
-                    tar.extract(member, path=output_directory)
-
                 lab_path = os.path.splitext(output_path)[0] + ".lab"
-                if not os.path.exists(lab_path):
-                    with open(lab_path, "a") as fobj:
-                        fobj.write(clips_map[fname])
+
+                tar.extract(member, path=output_directory)
+                with open(lab_path, "a") as fobj:
+                    fobj.write(clips_map[fname])
 
                 n_clips -= 1
                 pbar.update(1)
 
 
 def main(vocab, archive, database, output_directory):
-    clips = _query_clips(vocab, database)
+    clips = _query_clips(database, vocab)
     extract_clips(clips, archive, output_directory)
 
 
-def _query_clips(database, vocab=None):
+def _query_clips(database, vocab):
     with DatabaseManager(database) as db:
         if vocab:
             return db.join(
@@ -73,7 +71,6 @@ def _parser():
     parser.add_argument(
         "--vocab",
         nargs="+",
-        default=["hey", "fire", "fox"],
         type=str,
         help="the working directory to write intermediate artifacts",
     )

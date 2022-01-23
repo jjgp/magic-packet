@@ -35,8 +35,11 @@ class SQL:
         def insert():
             return f"insert into {self.name} values ({', '.join(['?'] * self.n_cols)})"
 
-        def select():
-            return f"select * from {self.name}"
+        def select(where=None):
+            select = f"select * from {self.name}"
+            if where:
+                select += f"where {where}"
+            return select
 
         setattr(self, create.__name__, create)
         setattr(self, drop.__name__, drop)
@@ -110,14 +113,4 @@ class Words(NamedTuple):
 @sql_inner_join(Clips, Words, on="clip_id = id", distinct=True)
 class DistinctClips(NamedTuple):
     fname: str
-    sentences: str
-
-
-@sql_inner_join()
-class WordsOnClips(NamedTuple):
-    clip_id: int
-    fname: str
-    loc: int
-    word: str
     sentence: str
-    split: str

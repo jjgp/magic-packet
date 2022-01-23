@@ -39,9 +39,9 @@ $(corpus_db): $(corpus_dir)
 		--overwrite \
 		--splits train dev test
 
-.PHONY: extract_vocab
-extract_vocab: ./$(corpus_db)
-	$(python) magic_packet.datasets.cv_corpus.vocab.extract_vocab \
+.PHONY: extract_clips
+extract_clips:
+	$(python) magic_packet.datasets.cv_corpus.vocab.extract_clips \
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		./$(clips_dir) \
