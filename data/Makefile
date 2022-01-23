@@ -47,7 +47,7 @@ extract_vocab: $(corpus_db) lexicon.txt $(acoustic_model)
 		lexicon.txt \
 		$(MFA_ACOUSTIC_MODEL) \
 		./$(corpus_dir) \
-		./$(corpus_dir)/extracted \
+		./$(corpus_dir) \
 		--vocab $(VOCAB)
 
 # $(corpus_dir)/alignments: N_JOBS ?= 8

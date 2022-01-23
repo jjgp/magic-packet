@@ -1,11 +1,11 @@
 import argparse
 import os
-import tarfile as tf
+import tarfile as tfile
 
 
 def tarfile(arg):
     arg = path(arg)
-    if not tf.is_tarfile(arg):
+    if not tfile.is_tarfile(arg):
         raise argparse.ArgumentTypeError(f"{arg} is not a tarfile")
     return arg
 

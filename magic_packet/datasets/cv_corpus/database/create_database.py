@@ -20,14 +20,14 @@ _EMPTY_SENTENCE_TOKEN = "[empty]"
 logger = logging.getLogger(__name__)
 
 
-def main(tar, database, overwrite, splits):
+def main(archive, database, overwrite, splits):
     database_exists = os.path.exists(database)
     if database_exists and not overwrite:
         logger.error(f"Database {database} exists and overwrite is {overwrite}")
         return
 
     with DatabaseManager(database) as db_manager, tf.io.gfile.GFile(
-        tar, "rb"
+        archive, "rb"
     ) as gfile, tarfile.open(mode="r:*", fileobj=gfile) as tar:
         if database_exists:
             db_manager.drop(Clips, Words)
@@ -68,7 +68,7 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
             for loc, word in enumerate(sentence.split())
         ] or [Words(clip_id, -1, _EMPTY_SENTENCE_TOKEN)]
 
-        db_manager.insert(Clips(clip_id, fname, split))
+        db_manager.insert(Clips(clip_id, fname, sentence, split))
         db_manager.insertmany(words)
 
 
@@ -77,7 +77,9 @@ def _parser():
         description="create the database for the common voice archive contents"
     )
     parser.add_argument(
-        "tar", type=argtype.tarfile, help="the path to the common voice archive file"
+        "archive",
+        type=argtype.tarfile,
+        help="the path to the common voice archive file",
     )
     parser.add_argument("database", type=str, help="the path to the corpus database")
     parser.add_argument(
@@ -97,4 +99,4 @@ def _parser():
 
 if __name__ == "__main__":
     args = _parser().parse_args()
-    main(args.tar, args.database, args.overwrite, args.splits)
+    main(args.archive, args.database, args.overwrite, args.splits)

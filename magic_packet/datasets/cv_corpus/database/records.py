@@ -88,6 +88,7 @@ def sql_inner_join(record_a, record_b, on):
 class Clips(NamedTuple):
     id: int
     fname: str
+    sentence: str
     split: str
 
 
@@ -104,4 +105,5 @@ class WordsOnClips(NamedTuple):
     fname: str
     loc: int
     word: str
+    sentence: str
     split: str
