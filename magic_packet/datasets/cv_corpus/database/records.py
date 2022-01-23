@@ -35,9 +35,13 @@ class SQL:
         def insert():
             return f"insert into {self.name} values ({', '.join(['?'] * self.n_cols)})"
 
+        def select():
+            return f"select * from {self.name}"
+
         setattr(self, create.__name__, create)
         setattr(self, drop.__name__, drop)
         setattr(self, insert.__name__, insert)
+        setattr(self, select.__name__, select)
 
 
 def sql_table(primary_keys=[]):
@@ -64,7 +68,7 @@ def sql_table(primary_keys=[]):
     return _namedtuple_decorator
 
 
-def sql_inner_join(record_a, record_b, on):
+def sql_inner_join(record_a, record_b, on, distinct=False):
     def _namedtuple_decorator(_namedtuple):
         if hasattr(_namedtuple, _DECORATED_ATTR):
             _sql = getattr(_namedtuple, _DECORATED_ATTR)
@@ -72,11 +76,15 @@ def sql_inner_join(record_a, record_b, on):
             _sql = SQL()
             setattr(_namedtuple, _DECORATED_ATTR, _sql)
 
+        select = ", ".join(_namedtuple._fields)
+        if distinct:
+            select = "distinct " + select
+
         _sql.joinattr(
             record_a.__name__.lower(),
             record_b.__name__.lower(),
             "inner",
-            select=", ".join(_namedtuple._fields),
+            select=select,
             on=on,
         )
         return _namedtuple
@@ -99,7 +107,13 @@ class Words(NamedTuple):
     word: str
 
 
-@sql_inner_join(Words, Clips, on="clip_id = id")
+@sql_inner_join(Clips, Words, on="clip_id = id", distinct=True)
+class DistinctClips(NamedTuple):
+    fname: str
+    sentences: str
+
+
+@sql_inner_join()
 class WordsOnClips(NamedTuple):
     clip_id: int
     fname: str

@@ -33,5 +33,11 @@ class DatabaseManager:
         self._cur.executemany(records[0]._sql.insert(), records)
 
     def join(self, record, where=None):
-        self._cur.execute(record._sql.join(where))
+        return self._query(record, record._sql.join, where)
+
+    def select(self, record, where=None):
+        return self._query(record, record._sql.select, where)
+
+    def _query(self, record, fn, where):
+        self._cur.execute(fn(where))
         return map(record._make, self._cur.fetchall())

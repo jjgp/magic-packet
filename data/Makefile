@@ -9,7 +9,7 @@ acoustic_model      = $(MFA_DIRECTORY)/pretrained_models/acoustic/$(MFA_ACOUSTIC
 corpus_archive      = cv-corpus-$(COMMON_VOICE_VERS)-$(COMMON_VOICE_LANG).tar.gz
 corpus_dir          = cv-corpus-$(COMMON_VOICE_VERS)/$(COMMON_VOICE_LANG)
 corpus_db           = $(corpus_dir).db
-mfa                 = $(shell command -v mfa)
+clips_dir           = $(corpus_dir)/clips
 pythonpath          = $(abspath ..)
 python              = PYTHONPATH=$(pythonpath) python -m
 vocab_dirs          = $(foreach word,$(VOCAB),$(corpus_dir)/$(word))
@@ -19,6 +19,9 @@ help:
 	@echo "make $(corpus_archive):\n  download the common voice corpus archive\n"
 	@echo "make $(corpus_db):\n  create the courpus databse\n"
 	@echo "make $(extract_vocab):\n  extract clips of target vocab ($(VOCAB))\n"
+
+$(acoustic_model):
+	mfa model download acoustic $(MFA_ACOUSTIC_MODEL)
 
 $(corpus_archive):
 	$(python) magic_packet.datasets.cv_corpus.download_archive \
@@ -36,27 +39,13 @@ $(corpus_db): $(corpus_dir)
 		--overwrite \
 		--splits train dev test
 
-$(acoustic_model):
-	mfa model download acoustic $(MFA_ACOUSTIC_MODEL)
-
 .PHONY: extract_vocab
-extract_vocab: $(corpus_db) lexicon.txt $(acoustic_model)
+extract_vocab: ./$(corpus_db)
 	$(python) magic_packet.datasets.cv_corpus.vocab.extract_vocab \
 		./$(corpus_archive) \
 		./$(corpus_db) \
-		lexicon.txt \
-		$(MFA_ACOUSTIC_MODEL) \
-		./$(corpus_dir) \
-		./$(corpus_dir) \
-		--vocab $(VOCAB)
-
-# $(corpus_dir)/alignments: N_JOBS ?= 8
-# $(corpus_dir)/alignments: $(corpus_dir) lexicon.txt
-# 	yes n | $(mfa) align --num_jobs $(N_JOBS) \
-# 		$(corpus_dir)/clips \
-# 		lexicon.txt \
-# 		english \
-# 		$@
+		./$(clips_dir) \
+		$(ifneq $(VOCAB),, --vocab $(VOCAB))
 
 lexicon.txt:
 	curl $(LEXICON_URL) -o $@
