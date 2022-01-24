@@ -41,8 +41,8 @@ def resnet8(input_shape, n_labels, n_layers=6, filters=45, pooling=(4, 3)):
     skip = x
     for i in range(n_layers):
         x = Conv2D(**convargs)(x)
-        if i % 2 == 0:
+        if i > 0 and i % 2 == 0:
             x = skip = Add()([x, skip])
         x = BatchNormalization(center=False, scale=False)(x)
-    outputs = Dense(n_labels, activation="softmax")(x)
+    outputs = Dense(n_labels)(x)
     return Model(inputs=inputs, outputs=outputs)
