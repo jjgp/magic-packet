@@ -19,7 +19,7 @@ vocab_dirs          = $(foreach word,$(VOCAB),$(corpus_dir)/$(word))
 help:
 	@echo "make $(corpus_archive):\n  download the common voice corpus archive\n"
 	@echo "make $(corpus_db):\n  create the courpus databse\n"
-	@echo "make $(extract_vocab):\n  extract clips of target vocab ($(VOCAB))\n"
+	@echo "make $(extract_clips):\n  extract clips of target vocab ($(VOCAB)) and OOV\n"
 
 $(acoustic_model):
 	mfa model download acoustic $(MFA_ACOUSTIC_MODEL)
