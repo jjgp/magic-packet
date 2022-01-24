@@ -13,7 +13,7 @@ from tensorflow.keras.models import Model
 def resnet8(input_shape, n_labels, n_layers=6, filters=45, pooling=(4, 3)):
     """
     Some assumptions to be double checked:
-    - pytorch add zero padding to maintain the dimensions. tensorflow would
+    - pytorch adds zero padding to maintain the dimensions. tensorflow would
     need padding as 'same' to do this.
     - tensorflow's BN parameters are slightly different and, for now, assumed
     to be unimportant.
