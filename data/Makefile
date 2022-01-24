@@ -8,7 +8,7 @@ VOCAB              ?= hey fire fox
 acoustic_model      = $(MFA_DIRECTORY)/pretrained_models/acoustic/$(MFA_ACOUSTIC_MODEL).zip
 corpus_archive      = cv-corpus-$(COMMON_VOICE_VERS)-$(COMMON_VOICE_LANG).tar.gz
 corpus_dir          = cv-corpus-$(COMMON_VOICE_VERS)/$(COMMON_VOICE_LANG)
-corpus_db           = $(corpus_dir).db
+corpus_db           = $(corpus_dir)/splits.db
 aligned_dir         = $(corpus_dir)/aligned
 clips_dir           = $(corpus_dir)/clips
 pythonpath          = $(abspath ..)
@@ -57,6 +57,7 @@ extract_clips:
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		./$(clips_dir) \
+		--oov-pct 5 \
 		$(if $(VOCAB),--vocab $(VOCAB))
 
 lexicon.txt:

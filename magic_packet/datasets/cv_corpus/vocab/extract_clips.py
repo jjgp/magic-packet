@@ -33,7 +33,7 @@ def extract_clips(clips, archive, output_directory):
                 lab_path = os.path.splitext(output_path)[0] + ".lab"
 
                 tar.extract(member, path=output_directory)
-                with open(lab_path, "a") as fobj:
+                with open(lab_path, "w") as fobj:
                     fobj.write(clips_map[fname])
 
                 n_clips -= 1
