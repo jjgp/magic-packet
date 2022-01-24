@@ -66,19 +66,17 @@ def query_clips(database, vocab=None, oov_pct=None):
         return (vocab_clips, oov_clips)
 
 
-def _abbr_clips_record(name):
-    return namedtuple(name, ["fname", "sentence"])
+def _abbr_clips_record():
+    return namedtuple("AbbrClips", ["fname", "sentence"])
 
 
 def _distinct_clips():
-    record = _abbr_clips_record("DistinctClips")
     return sql_join(Clips, Words, join_type="inner", on="clip_id = id", distinct=True)(
-        record
+        _abbr_clips_record()
     )
 
 
 def _oov_clips(vocab):
-    record = _abbr_clips_record("OOVClips")
     words_equal = " or ".join(f"word = '{word}'" for word in vocab)
     return sql_join(
         Clips,
@@ -86,7 +84,7 @@ def _oov_clips(vocab):
         join_type="left",
         on="clip_id = id",
         distinct=True,
-    )(record)
+    )(_abbr_clips_record())
 
 
 def _parser():
