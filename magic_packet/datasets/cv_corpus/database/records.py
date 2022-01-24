@@ -71,7 +71,7 @@ def sql_table(primary_keys=[]):
     return _namedtuple_decorator
 
 
-def sql_inner_join(record_a, record_b, on, distinct=False):
+def sql_join(a, b, join_type, on, distinct=False):
     def _namedtuple_decorator(_namedtuple):
         if hasattr(_namedtuple, _DECORATED_ATTR):
             _sql = getattr(_namedtuple, _DECORATED_ATTR)
@@ -84,9 +84,9 @@ def sql_inner_join(record_a, record_b, on, distinct=False):
             select = "distinct " + select
 
         _sql.joinattr(
-            record_a.__name__.lower(),
-            record_b.__name__.lower(),
-            "inner",
+            a if isinstance(a, str) else a.__name__.lower(),
+            b if isinstance(b, str) else b.__name__.lower(),
+            join_type,
             select=select,
             on=on,
         )
@@ -108,9 +108,3 @@ class Words(NamedTuple):
     clip_id: int
     loc: int
     word: str
-
-
-@sql_inner_join(Clips, Words, on="clip_id = id", distinct=True)
-class DistinctClips(NamedTuple):
-    fname: str
-    sentence: str
