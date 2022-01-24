@@ -1,1 +1,3 @@
-brew "openfst"  # dependency of mfa
+brew "ffmpeg"
+brew "openfst"
+brew "sox"

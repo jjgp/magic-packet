@@ -9,6 +9,7 @@ acoustic_model      = $(MFA_DIRECTORY)/pretrained_models/acoustic/$(MFA_ACOUSTIC
 corpus_archive      = cv-corpus-$(COMMON_VOICE_VERS)-$(COMMON_VOICE_LANG).tar.gz
 corpus_dir          = cv-corpus-$(COMMON_VOICE_VERS)/$(COMMON_VOICE_LANG)
 corpus_db           = $(corpus_dir).db
+aligned_dir         = $(corpus_dir)/aligned
 clips_dir           = $(corpus_dir)/clips
 pythonpath          = $(abspath ..)
 python              = PYTHONPATH=$(pythonpath) python -m
@@ -22,6 +23,17 @@ help:
 
 $(acoustic_model):
 	mfa model download acoustic $(MFA_ACOUSTIC_MODEL)
+
+.PHONY: aligned
+aligned: N_JOBS := 8
+aligned:
+	yes n | mfa align -j $(N_JOBS) \
+		$(clips_dir) \
+		lexicon.txt \
+		english \
+		$(aligned_dir) \
+		--clean \
+		--overwrite
 
 $(corpus_archive):
 	$(python) magic_packet.datasets.cv_corpus.download_archive \
@@ -45,7 +57,7 @@ extract_clips:
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		./$(clips_dir) \
-		$(ifneq $(VOCAB),, --vocab $(VOCAB))
+		$(if $(VOCAB),--vocab $(VOCAB))
 
 lexicon.txt:
 	curl $(LEXICON_URL) -o $@
