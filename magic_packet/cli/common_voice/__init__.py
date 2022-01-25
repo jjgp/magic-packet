@@ -7,11 +7,9 @@ def add_to_parser(parser):
 
     for module in (createdb, download, extract):
         name = module.__name__.split(".")[-1]
-        parser = subparsers.add_parser(name)
-        parser.set_defaults(func=module.main)
-        module.add_to_parser(parser)
+        subparser = subparsers.add_parser(name)
+        subparser.set_defaults(func=module.main)
+        module.add_to_parser(subparser)
 
 
-__all__ = [
-    "add_to_parser",
-]
+__all__ = ["add_to_parser"]
