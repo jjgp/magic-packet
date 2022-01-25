@@ -10,7 +10,7 @@ import tarfile
 import tensorflow as tf
 from tqdm import tqdm
 
-from magic_packet.utils import argtype
+from magic_packet.cli import argtype
 
 from .database_manager import DatabaseManager
 from .records import Clips, Words
@@ -20,7 +20,29 @@ _EMPTY_SENTENCE_TOKEN = "[empty]"
 logger = logging.getLogger(__name__)
 
 
-def main(archive, database, overwrite, splits):
+def add_to_parser(parser):
+    parser.description = "create the database for the common voice archive contents"
+    parser.add_argument(
+        "archive",
+        type=argtype.tarfile,
+        help="the path to the common voice archive file",
+    )
+    parser.add_argument("database", type=str, help="the path to the corpus database")
+    parser.add_argument(
+        "--overwrite",
+        default=False,
+        action=argparse.BooleanOptionalAction,
+        help="overwrite existing database if it exists",
+    )
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        default=["train", "dev", "test"],
+        help="the splits to include in the database",
+    )
+
+
+def createdb(archive, database, overwrite, splits):
     database_exists = os.path.exists(database)
     if database_exists and not overwrite:
         logger.error(f"Database {database} exists and overwrite is {overwrite}")
@@ -49,6 +71,10 @@ def main(archive, database, overwrite, splits):
         db_manager.commit()
 
 
+def main(args):
+    createdb(args.archive, args.database, args.overwrite, args.splits)
+
+
 def _insert_split_into_database(split, tsv_fobj, db_manager):
     io_wrapper = io.TextIOWrapper(tsv_fobj, encoding="utf-8")
     total = sum(1 for _ in io_wrapper) - 1  # - 1 for TSV header
@@ -72,31 +98,7 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
         db_manager.insertmany(words)
 
 
-def _parser():
-    parser = argparse.ArgumentParser(
-        description="create the database for the common voice archive contents"
-    )
-    parser.add_argument(
-        "archive",
-        type=argtype.tarfile,
-        help="the path to the common voice archive file",
-    )
-    parser.add_argument("database", type=str, help="the path to the corpus database")
-    parser.add_argument(
-        "--overwrite",
-        default=False,
-        action=argparse.BooleanOptionalAction,
-        help="overwrite existing database if it exists",
-    )
-    parser.add_argument(
-        "--splits",
-        nargs="+",
-        default=["train", "dev", "test"],
-        help="the splits to include in the database",
-    )
-    return parser
-
-
 if __name__ == "__main__":
-    args = _parser().parse_args()
-    main(args.archive, args.database, args.overwrite, args.splits)
+    parser = argparse.ArgumentParser()
+    add_to_parser(parser)
+    main(parser.parse_args())

@@ -6,9 +6,40 @@ from collections import namedtuple
 
 from tqdm import tqdm
 
-from magic_packet.datasets.cv_corpus.database.database_manager import DatabaseManager
-from magic_packet.datasets.cv_corpus.database.records import Clips, Words, sql_join
-from magic_packet.utils import argtype
+from magic_packet.cli import argtype
+
+from .database import Clips, DatabaseManager, Words, sql_join
+
+
+def add_to_parser(parser):
+    parser.description = "extract clips from the common voice archive"
+    parser.add_argument(
+        "archive",
+        type=argtype.tarfile,
+        help="the path to the common voice archive file",
+    )
+    parser.add_argument(
+        "database", type=argtype.path, help="the path to the corpus database"
+    )
+    parser.add_argument(
+        "output_directory", type=str, help="the directory to write extracted vocab"
+    )
+    parser.add_argument(
+        "--oov-pct",
+        type=int,
+        choices=range(0, 101),
+        help=(
+            "the percentage of OOV clips to extract."
+            "if vocab is unspecified, this is ignored."
+        ),
+        metavar="[0-100]",
+    )
+    parser.add_argument(
+        "--vocab",
+        nargs="+",
+        type=str,
+        help="the working directory to write intermediate artifacts",
+    )
 
 
 def extract_clips(clips, archive, output_directory):
@@ -40,10 +71,10 @@ def extract_clips(clips, archive, output_directory):
                 pbar.update(1)
 
 
-def main(vocab, oov_pct, archive, database, output_directory):
-    vocab_clips, oov_clips = query_clips(database, vocab, oov_pct)
+def main(args):
+    vocab_clips, oov_clips = query_clips(args.database, args.vocab, args.oov_pct)
     clips = itertools.chain(vocab_clips, oov_clips) if oov_clips else vocab_clips
-    extract_clips(clips, archive, output_directory)
+    extract_clips(clips, args.archive, args.output_directory)
 
 
 def query_clips(database, vocab=None, oov_pct=None):
@@ -87,44 +118,11 @@ def _oov_clips(vocab):
     )(_abbr_clips_record())
 
 
-def _parser():
-    parser = argparse.ArgumentParser(
-        description="extract the vocab audio from the common voice archive"
-    )
-    parser.add_argument(
-        "archive",
-        type=argtype.tarfile,
-        help="the path to the common voice archive file",
-    )
-    parser.add_argument(
-        "database", type=argtype.path, help="the path to the corpus database"
-    )
-    parser.add_argument(
-        "output_directory", type=str, help="the directory to write extracted vocab"
-    )
-    parser.add_argument(
-        "--oov-pct",
-        type=int,
-        choices=range(0, 101),
-        help=(
-            "the percentage of OOV clips to extract."
-            "if vocab is unspecified, this is ignored."
-        ),
-        metavar="[0-100]",
-    )
-    parser.add_argument(
-        "--vocab",
-        nargs="+",
-        type=str,
-        help="the working directory to write intermediate artifacts",
-    )
-    return parser
-
-
 def _sql_sample_condition(sample_pct):
     return f"abs(cast(random() as real)) / 9223372036854775808 < {sample_pct}"
 
 
 if __name__ == "__main__":
-    args = _parser().parse_args()
-    main(args.vocab, args.oov_pct, args.archive, args.database, args.output_directory)
+    parser = argparse.ArgumentParser()
+    add_to_parser(parser)
+    main(parser.parse_args())

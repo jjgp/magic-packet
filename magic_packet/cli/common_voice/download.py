@@ -10,7 +10,14 @@ _URL_FORMAT = (
 )
 
 
-def main(directory, language, version):
+def add_to_parser(parser):
+    parser.description = "download the common voice archive file"
+    parser.add_argument("directory", type=str, help="the download directory")
+    parser.add_argument("--language", type=str, default="en")
+    parser.add_argument("--version", type=str, default="7.0-2021-07-21")
+
+
+def download(directory, language, version):
     tar = _TAR_FORMAT.format(version, language)
     url = _URL_FORMAT.format(version, tar)
     with urllib.request.urlopen(url) as response:
@@ -24,14 +31,8 @@ def main(directory, language, version):
         )
 
 
-def _parser():
-    parser = argparse.ArgumentParser(
-        description="download the common voice archive file"
-    )
-    parser.add_argument("directory", type=str, help="the download directory")
-    parser.add_argument("--language", type=str, default="en")
-    parser.add_argument("--version", type=str, default="7.0-2021-07-21")
-    return parser
+def main(args):
+    download(args.directory, args.language, args.version)
 
 
 def _tqdm_reporthook(pbar):
@@ -48,5 +49,6 @@ def _tqdm_reporthook(pbar):
 
 
 if __name__ == "__main__":
-    args = _parser().parse_args()
-    main(args.directory, args.language, args.version)
+    parser = argparse.ArgumentParser()
+    add_to_parser(parser)
+    main(parser.parse_args())
