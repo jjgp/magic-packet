@@ -1,4 +1,4 @@
-# flake8: noqa
+from .resnet8 import resnet8
+from .simple_audio_model import simple_audio_model
 
-from .resnet8 import *
-from .simple_audio_model import *
+__all__ = ["resnet8", "simple_audio_model"]
