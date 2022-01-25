@@ -1,3 +1,3 @@
-from .cli.mgpkt import main
+from .cli.magicpkt import main
 
 main()

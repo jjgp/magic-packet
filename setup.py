@@ -25,6 +25,6 @@ setup(
     packages=find_packages(),
     python_requires=">=3.9",
     entry_points={
-        "console_scripts": ["mgpkt = magic_packet.cli.mgpkt:main"],
+        "console_scripts": ["magicpkt = magic_packet.cli.magicpkt:main"],
     },
 )

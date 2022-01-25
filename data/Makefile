@@ -36,7 +36,7 @@ aligned:
 		--overwrite
 
 $(corpus_archive):
-	mgpkt cv download \
+	magicpkt cv download \
 		. \
 		--lang=$(COMMON_VOICE_LANG) \
 		--version=$(COMMON_VOICE_VERS)
@@ -45,15 +45,15 @@ $(corpus_dir):
 	mkdir -p $(corpus_dir)
 
 $(corpus_db): $(corpus_dir)
-	mgpkt cv createdb \
+	magicpkt cv createdb \
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		--overwrite \
 		--splits train dev test
 
-.PHONY: clips
-clips:
-	mgpkt cv clips \
+.PHONY: extract
+extract:
+	magicpkt cv extract \
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		./$(clips_dir) \
