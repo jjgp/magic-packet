@@ -54,6 +54,7 @@ def add_to_parser(parser):
         default=["train", "dev", "test"],
         help="the splits to include in the database",
     )
+    parser.set_defaults(func=main)
 
 
 def createdb(archive, database, overwrite, splits):
@@ -115,4 +116,5 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     add_to_parser(parser)
-    main(parser.parse_args())
+    args = parser.parse_args()
+    args.func(args)

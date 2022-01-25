@@ -41,6 +41,7 @@ def add_to_parser(parser):
         type=str,
         help="the working directory to write intermediate artifacts",
     )
+    parser.set_defaults(func=main)
 
 
 def extract_clips(clips, archive, output_directory):
@@ -126,4 +127,5 @@ def _sql_sample_condition(sample_pct):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     add_to_parser(parser)
-    main(parser.parse_args())
+    args = parser.parse_args()
+    args.func(args)

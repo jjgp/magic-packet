@@ -1,5 +1,3 @@
-def add_to_parser(parser):
-    parser.description = "model training"
-
+from .train import add_to_parser
 
 __all__ = ["add_to_parser"]

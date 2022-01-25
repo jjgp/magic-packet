@@ -15,6 +15,7 @@ def add_to_parser(parser):
     parser.add_argument("directory", type=str, help="the download directory")
     parser.add_argument("--language", type=str, default="en")
     parser.add_argument("--version", type=str, default="7.0-2021-07-21")
+    parser.set_defaults(func=main)
 
 
 def download(directory, language, version):
@@ -51,4 +52,5 @@ def _tqdm_reporthook(pbar):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     add_to_parser(parser)
-    main(parser.parse_args())
+    args = parser.parse_args()
+    args.func(args)
