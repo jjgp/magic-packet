@@ -17,9 +17,10 @@ vocab_dirs          = $(foreach word,$(VOCAB),$(corpus_dir)/$(word))
 
 .PHONY: help
 help:
-	@echo "make $(corpus_archive):\n  download the common voice corpus archive\n"
+	@echo "make aligned:\n  mfa align audio clips\n"
+	@echo "make $(corpus_archive):\n  download the corpus archive\n"
 	@echo "make $(corpus_db):\n  create the courpus databse\n"
-	@echo "make $(clips):\n  extract clips of target vocab ($(VOCAB)) and OOV\n"
+	@echo "make extract:\n  extract clips of target vocab ($(VOCAB)) and OOV\n"
 
 $(acoustic_model):
 	mfa model download acoustic $(MFA_ACOUSTIC_MODEL)
