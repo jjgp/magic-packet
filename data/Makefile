@@ -13,6 +13,7 @@ aligned_dir         = $(corpus_dir)/aligned
 clips_dir           = $(corpus_dir)/clips
 pythonpath          = $(abspath ..)
 python              = PYTHONPATH=$(pythonpath) python -m
+magicpkt            = $(python) magic_packet.cli.magicpkt
 vocab_dirs          = $(foreach word,$(VOCAB),$(corpus_dir)/$(word))
 
 .PHONY: help
@@ -37,7 +38,7 @@ aligned:
 		--overwrite
 
 $(corpus_archive):
-	magicpkt cv download \
+	$(magicpkt) cv download \
 		. \
 		--lang=$(COMMON_VOICE_LANG) \
 		--version=$(COMMON_VOICE_VERS)
@@ -46,7 +47,7 @@ $(corpus_dir):
 	mkdir -p $(corpus_dir)
 
 $(corpus_db): $(corpus_dir)
-	magicpkt cv createdb \
+	$(magicpkt) cv createdb \
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		--overwrite \
@@ -54,7 +55,7 @@ $(corpus_db): $(corpus_dir)
 
 .PHONY: extract
 extract:
-	magicpkt cv extract \
+	$(magicpkt) cv extract \
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		./$(clips_dir) \
