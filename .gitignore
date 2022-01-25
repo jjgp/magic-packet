@@ -7,5 +7,4 @@
 .terraform/
 __pycache__/
 data/*
-!data/.gitkeep
 !data/Makefile
