@@ -1,14 +1,5 @@
-import argparse
-
 import tensorflow as tf
-from tensorflow.keras.layers import (
-    Add,
-    AvgPool2D,
-    BatchNormalization,
-    Conv2D,
-    Dense,
-    Input,
-)
+from tensorflow.keras.layers import Add, AvgPool2D, BatchNormalization, Conv2D, Dense
 from tensorflow.keras.models import Model
 
 _N_BLOCKS = 3
@@ -54,12 +45,3 @@ def resnet8(inputs, n_labels, n_blocks=_N_BLOCKS, filters=_FILTERS, pooling=_POO
     x = Dense(n_labels)(x)
     outputs = tf.reshape(x, shape=(-1, x.shape[3]))
     return Model(inputs, outputs, name="resnet8")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    add_to_parser(parser)
-    args = parser.parse_args()
-    model = args.model(args)
-    model = model(Input(shape=(124, 13, 1)))
-    model.summary()

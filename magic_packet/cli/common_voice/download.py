@@ -12,9 +12,9 @@ _URL_FORMAT = (
 
 def add_to_parser(parser):
     parser.description = "download the common voice archive file"
-    parser.add_argument("directory", type=str, help="the download directory")
-    parser.add_argument("--language", type=str, default="en")
-    parser.add_argument("--version", type=str, default="7.0-2021-07-21")
+    parser.add_argument("directory", help="the download directory")
+    parser.add_argument("--language", default="en")
+    parser.add_argument("--version", default="7.0-2021-07-21")
     parser.set_defaults(func=main)
 
 

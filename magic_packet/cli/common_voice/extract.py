@@ -23,7 +23,7 @@ def add_to_parser(parser):
         "database", type=argtype.path, help="the path to the corpus database"
     )
     parser.add_argument(
-        "output_directory", type=str, help="the directory to write extracted vocab"
+        "output_directory", help="the directory to write extracted vocab"
     )
     parser.add_argument(
         "--oov-pct",
@@ -38,7 +38,6 @@ def add_to_parser(parser):
     parser.add_argument(
         "--vocab",
         nargs="+",
-        type=str,
         help="the working directory to write intermediate artifacts",
     )
     parser.set_defaults(func=main)

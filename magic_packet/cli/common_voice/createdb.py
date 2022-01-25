@@ -41,7 +41,7 @@ def add_to_parser(parser):
         type=argtype.tarfile,
         help="the path to the common voice archive file",
     )
-    parser.add_argument("database", type=str, help="the path to the corpus database")
+    parser.add_argument("database", help="the path to the corpus database")
     parser.add_argument(
         "--overwrite",
         default=False,
