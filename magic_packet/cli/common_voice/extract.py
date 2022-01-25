@@ -7,8 +7,9 @@ from collections import namedtuple
 from tqdm import tqdm
 
 from magic_packet.cli import argtype
+from magic_packet.database import DatabaseManager, sql_join
 
-from .database import Clips, DatabaseManager, Words, sql_join
+from .createdb import Clips, Words
 
 
 def add_to_parser(parser):

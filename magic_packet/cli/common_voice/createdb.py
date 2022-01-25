@@ -6,18 +6,32 @@ import os
 import re
 import string
 import tarfile
+from typing import NamedTuple
 
 import tensorflow as tf
 from tqdm import tqdm
 
 from magic_packet.cli import argtype
-
-from .database_manager import DatabaseManager
-from .records import Clips, Words
+from magic_packet.database import DatabaseManager, sql_table
 
 _EMPTY_SENTENCE_TOKEN = "[empty]"
 
 logger = logging.getLogger(__name__)
+
+
+@sql_table(primary_keys=["id"])
+class Clips(NamedTuple):
+    id: int
+    fname: str
+    sentence: str
+    split: str
+
+
+@sql_table(primary_keys=["clip_id", "loc"])
+class Words(NamedTuple):
+    clip_id: int
+    loc: int
+    word: str
 
 
 def add_to_parser(parser):

@@ -1,4 +1,4 @@
-from typing import NamedTuple, get_type_hints
+from typing import get_type_hints
 
 _DECORATED_ATTR = "_sql"
 
@@ -93,18 +93,3 @@ def sql_join(a, b, join_type, on, distinct=False):
         return _namedtuple
 
     return _namedtuple_decorator
-
-
-@sql_table(primary_keys=["id"])
-class Clips(NamedTuple):
-    id: int
-    fname: str
-    sentence: str
-    split: str
-
-
-@sql_table(primary_keys=["clip_id", "loc"])
-class Words(NamedTuple):
-    clip_id: int
-    loc: int
-    word: str
