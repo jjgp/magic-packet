@@ -1,10 +1,10 @@
+import tensorflow as tf
 from tensorflow.keras.layers import (
     Add,
     AvgPool2D,
     BatchNormalization,
     Conv2D,
     Dense,
-    Flatten,
     Input,
 )
 from tensorflow.keras.models import Model
@@ -29,7 +29,11 @@ def resnet8(input_shape, n_labels, n_layers=6, filters=45, pooling=(4, 3)):
         if i > 0 and i % 2 == 0:
             x = skip = Add()([x, skip])
         x = BatchNormalization(center=False, scale=False)(x)
-
-    x = Flatten()(x)
-    outputs = Dense(n_labels)(x)
+    x = AvgPool2D(pool_size=x.shape[1:3], strides=1)(x)
+    x = Dense(n_labels)(x)
+    outputs = tf.reshape(x, shape=(-1, x.shape[3]))
     return Model(inputs, outputs)
+
+
+if __name__ == "__main__":
+    pass
