@@ -1,5 +1,4 @@
-from magic_packet.cli.common_voice import download, extract
-from magic_packet.cli.common_voice.database import createdb
+from magic_packet.cli.common_voice import createdb, download, extract
 
 
 def add_to_parser(parser):

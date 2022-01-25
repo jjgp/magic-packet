@@ -54,12 +54,13 @@ $(corpus_db): $(corpus_dir)
 		--splits train dev test
 
 .PHONY: extract
+extract: OOV_PCT := 5
 extract:
 	$(magicpkt) cv extract \
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		./$(clips_dir) \
-		--oov-pct 5 \
+		--oov-pct $(OOV_PCT) \
 		$(if $(VOCAB),--vocab $(VOCAB))
 
 lexicon.txt:
