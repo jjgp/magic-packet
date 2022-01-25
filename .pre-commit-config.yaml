@@ -8,6 +8,13 @@ repos:
     rev: 3843f5f7c586fa6f0df81423f35d52e6af8e3039
     hooks:
       - id: nbstripout
+        args: [
+          --extra-keys,
+          'metadata.interpreter metadata.language_info.codemirror_mode
+          metadata.language_info.file_extension metadata.language_info.mimetype
+          metadata.language_info.nbconvert_exporter metadata.language_info.pygments_lexer
+          metadata.language_info.version metadata.kernelspec'
+        ]
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.2.2
     hooks:
