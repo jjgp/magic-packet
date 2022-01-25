@@ -1,6 +1,7 @@
 from setuptools import find_packages, setup
 
 install_requires = [
+    "numpy >= 1.19",
     "pydub >= 0.25",
     "tensorflow >= 2.6",
     "tensorflow-datasets >= 4.4",
@@ -22,5 +23,8 @@ setup(
     install_requires=install_requires,
     extras_require=extras_require,
     packages=find_packages(),
-    python_requires=">=3.7",
+    python_requires=">=3.9",
+    entry_points={
+        "console_scripts": ["mgpkt = magic_packet.cli.mgpkt:main"],
+    },
 )

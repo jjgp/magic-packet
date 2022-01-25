@@ -6,9 +6,9 @@ from collections import namedtuple
 
 from tqdm import tqdm
 
-from magic_packet.datasets.cv_corpus.database.database_manager import DatabaseManager
-from magic_packet.datasets.cv_corpus.database.records import Clips, Words, sql_join
-from magic_packet.utils import argtype
+from magic_packet.cli import argtype
+from magic_packet.datasets.common_voice.database.database_manager import DatabaseManager
+from magic_packet.datasets.common_voice.database.records import Clips, Words, sql_join
 
 
 def extract_clips(clips, archive, output_directory):

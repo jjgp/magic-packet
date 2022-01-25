@@ -19,7 +19,7 @@ vocab_dirs          = $(foreach word,$(VOCAB),$(corpus_dir)/$(word))
 help:
 	@echo "make $(corpus_archive):\n  download the common voice corpus archive\n"
 	@echo "make $(corpus_db):\n  create the courpus databse\n"
-	@echo "make $(extract_clips):\n  extract clips of target vocab ($(VOCAB)) and OOV\n"
+	@echo "make $(clips):\n  extract clips of target vocab ($(VOCAB)) and OOV\n"
 
 $(acoustic_model):
 	mfa model download acoustic $(MFA_ACOUSTIC_MODEL)
@@ -36,7 +36,7 @@ aligned:
 		--overwrite
 
 $(corpus_archive):
-	$(python) magic_packet.datasets.cv_corpus.download_archive \
+	mgpkt cv download \
 		. \
 		--lang=$(COMMON_VOICE_LANG) \
 		--version=$(COMMON_VOICE_VERS)
@@ -45,15 +45,15 @@ $(corpus_dir):
 	mkdir -p $(corpus_dir)
 
 $(corpus_db): $(corpus_dir)
-	$(python) magic_packet.datasets.cv_corpus.database.create_database \
+	mgpkt cv createdb \
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		--overwrite \
 		--splits train dev test
 
-.PHONY: extract_clips
-extract_clips:
-	$(python) magic_packet.datasets.cv_corpus.vocab.extract_clips \
+.PHONY: clips
+clips:
+	mgpkt cv clips \
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		./$(clips_dir) \

@@ -10,7 +10,7 @@ import tarfile
 import tensorflow as tf
 from tqdm import tqdm
 
-from magic_packet.utils import argtype
+from magic_packet.cli import argtype
 
 from .database_manager import DatabaseManager
 from .records import Clips, Words
