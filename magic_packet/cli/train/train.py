@@ -1,5 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Input
+from tensorflow.keras.losses import BinaryCrossentropy, SparseCategoricalCrossentropy
+from tensorflow.keras.optimizers import Adam
 
 from magic_packet import datasets, features
 
@@ -22,6 +24,7 @@ def add_to_parser(parser):
         default=["train[:80%]", "train[80%:90%]", "train[90%:]"],
         help="the train, validation, and test splits as specified by the TFDS API",
     )
+    parser.add_argument("-e", "--epochs", type=int, default=10)
     parser.add_argument("-v", "--vocab", action="append")
 
     subparsers = parser.add_subparsers(required=True)
@@ -31,7 +34,7 @@ def add_to_parser(parser):
 def train(args):
     all_ds, info = datasets.load(args.dataset, args.splits)
     label_names, vocab = info.features["label"].names, args.vocab
-    train_ds, _, _ = _preprocess_datasets(all_ds, label_names, vocab)
+    train_ds, val_ds, _ = _preprocess_datasets(all_ds, label_names, vocab)
 
     for mfcc, _ in train_ds.take(1):
         input_shape = mfcc.shape
@@ -45,6 +48,26 @@ def train(args):
     inputs = Input(shape=input_shape)
     model = model(inputs, n_outputs)
     model.summary()
+
+    loss = (
+        SparseCategoricalCrossentropy(from_logits=True)
+        if n_outputs > 2
+        else BinaryCrossentropy(from_logits=True)
+    )
+    model.compile(optimizer=Adam(), loss=loss, metrics=["accuracy"])
+
+    _fit(model, train_ds, val_ds, args.epochs)
+
+
+def _fit(model, train_ds, val_ds, epochs):
+    batch_size = 64
+    train_ds = train_ds.batch(batch_size)
+    val_ds = val_ds.batch(batch_size)
+
+    train_ds = train_ds.cache().prefetch(tf.data.AUTOTUNE)
+    val_ds = val_ds.cache().prefetch(tf.data.AUTOTUNE)
+
+    model.fit(train_ds, validation_data=val_ds, epochs=epochs)
 
 
 def _get_mfcc(example):
