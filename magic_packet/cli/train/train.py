@@ -20,10 +20,10 @@ def add_to_parser(parser):
     )
     parser.add_argument(
         "-s",
-        "--splits",
+        "--split",
         nargs=3,
         default=["train[:80%]", "train[80%:90%]", "train[90%:]"],
-        help="the train, validation, and test splits as specified by the TFDS API",
+        help="the train, validation, and test split as specified by the TFDS API",
     )
     parser.add_argument("-e", "--epochs", type=int, default=10)
     parser.add_argument("-v", "--vocab", action="append")
@@ -33,7 +33,7 @@ def add_to_parser(parser):
 
 
 def train(args):
-    all_ds, info = datasets.load(args.dataset, args.splits)
+    all_ds, info = datasets.load(args.dataset, args.split)
     label_names, vocab = info.features["label"].names, args.vocab
     train_ds, val_ds, test_ds = _preprocess_datasets(all_ds, label_names, vocab)
 
