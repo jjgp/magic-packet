@@ -37,8 +37,8 @@ def add_to_parser(parser):
     )
     parser.add_argument(
         "--vocab",
-        nargs="+",
-        help="the working directory to write intermediate artifacts",
+        action="append",
+        help="the target words to extract",
     )
     parser.set_defaults(func=main)
 

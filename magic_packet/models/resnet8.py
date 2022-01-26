@@ -9,7 +9,6 @@ _POOLING = (4, 3)
 
 def add_to_parser(parser):
     parser.description = "the resnet8 model"
-    parser.add_argument("n_labels", type=int)
     parser.add_argument("--n_blocks", type=int, default=_N_BLOCKS)
     parser.add_argument("--filters", type=int, default=_FILTERS)
     parser.add_argument("--pooling", nargs="+", type=int, default=_POOLING)
@@ -17,12 +16,12 @@ def add_to_parser(parser):
 
 
 def _model(args):
-    return lambda inputs: resnet8(
-        inputs, args.n_labels, args.n_blocks, args.filters, tuple(args.pooling)
+    return lambda inputs, n_outputs: resnet8(
+        inputs, n_outputs, args.n_blocks, args.filters, tuple(args.pooling)
     )
 
 
-def resnet8(inputs, n_labels, n_blocks=_N_BLOCKS, filters=_FILTERS, pooling=_POOLING):
+def resnet8(inputs, n_outputs, n_blocks=_N_BLOCKS, filters=_FILTERS, pooling=_POOLING):
     convargs = dict(
         filters=filters,
         kernel_size=3,
@@ -42,6 +41,6 @@ def resnet8(inputs, n_labels, n_blocks=_N_BLOCKS, filters=_FILTERS, pooling=_POO
         x = BatchNormalization(center=False, scale=False)(x)
 
     x = AvgPool2D(pool_size=x.shape[1:3], strides=1)(x)
-    x = Dense(n_labels)(x)
-    outputs = tf.reshape(x, shape=(-1, x.shape[3]))
+    x = Dense(n_outputs)(x)
+    outputs = tf.reshape(x, shape=(-1, n_outputs))
     return Model(inputs, outputs, name="resnet8")
