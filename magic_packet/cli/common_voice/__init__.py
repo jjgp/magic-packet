@@ -1,17 +1,13 @@
-from magic_packet.cli.common_voice import createdb, download, extract
-
-
 def add_to_parser(parser):
+    from . import createdb, download, extract
+
     parser.description = "subcommands to assemble the common voice dataset"
     subparsers = parser.add_subparsers(required=True)
 
     for module in (createdb, download, extract):
         name = module.__name__.split(".")[-1]
-        parser = subparsers.add_parser(name)
-        parser.set_defaults(func=module.main)
-        module.add_to_parser(parser)
+        subparser = subparsers.add_parser(name)
+        module.add_to_parser(subparser)
 
 
-__all__ = [
-    "add_to_parser",
-]
+__all__ = ["add_to_parser"]

@@ -1,7 +1,6 @@
 import argparse
 import csv
 import io
-import logging
 import os
 import re
 import string
@@ -15,8 +14,6 @@ from magic_packet.cli import argtype
 from magic_packet.database import DatabaseManager, sql_table
 
 _EMPTY_SENTENCE_TOKEN = "[empty]"
-
-logger = logging.getLogger(__name__)
 
 
 @sql_table(primary_keys=["id"])
@@ -41,7 +38,7 @@ def add_to_parser(parser):
         type=argtype.tarfile,
         help="the path to the common voice archive file",
     )
-    parser.add_argument("database", type=str, help="the path to the corpus database")
+    parser.add_argument("database", help="the path to the corpus database")
     parser.add_argument(
         "--overwrite",
         default=False,
@@ -49,18 +46,21 @@ def add_to_parser(parser):
         help="overwrite existing database if it exists",
     )
     parser.add_argument(
+        "-s",
         "--splits",
         nargs="+",
         default=["train", "dev", "test"],
         help="the splits to include in the database",
     )
+    parser.set_defaults(func=main)
 
 
 def createdb(archive, database, overwrite, splits):
     database_exists = os.path.exists(database)
     if database_exists and not overwrite:
-        logger.error(f"Database {database} exists and overwrite is {overwrite}")
-        return
+        raise FileExistsError(
+            f"Database {database} already exists and --overwrite not specified"
+        )
 
     with DatabaseManager(database) as db_manager, tf.io.gfile.GFile(
         archive, "rb"
@@ -115,4 +115,5 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     add_to_parser(parser)
-    main(parser.parse_args())
+    args = parser.parse_args()
+    args.func(args)
