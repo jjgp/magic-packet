@@ -1,3 +1,6 @@
+import logging
+
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Input
 from tensorflow.keras.losses import BinaryCrossentropy, SparseCategoricalCrossentropy
@@ -6,6 +9,8 @@ from tensorflow.keras.optimizers import Adam
 from magic_packet import datasets, features
 
 from . import models
+
+logger = logging.getLogger(__name__)
 
 
 def add_to_parser(parser):
@@ -34,13 +39,14 @@ def add_to_parser(parser):
 def train(args):
     all_ds, info = datasets.load(args.dataset, args.splits)
     label_names, vocab = info.features["label"].names, args.vocab
-    train_ds, val_ds, _ = _preprocess_datasets(all_ds, label_names, vocab)
+    train_ds, val_ds, test_ds = _preprocess_datasets(all_ds, label_names, vocab)
 
     for mfcc, _ in train_ds.take(1):
         input_shape = mfcc.shape
 
     if vocab:
-        n_outputs = len(vocab) + 1  # + 1 for OOV words
+        n_outputs = len(vocab)
+        n_outputs += 1 if n_outputs > 1 else 0  # multi vs binary classification
     else:
         n_outputs = len(label_names)
 
@@ -49,14 +55,35 @@ def train(args):
     model = model(inputs, n_outputs)
     model.summary()
 
+    # TODO: may need to modify loss and metrics for class distributions
     loss = (
         SparseCategoricalCrossentropy(from_logits=True)
-        if n_outputs > 2
+        if n_outputs > 1
         else BinaryCrossentropy(from_logits=True)
     )
     model.compile(optimizer=Adam(), loss=loss, metrics=["accuracy"])
 
     _fit(model, train_ds, val_ds, args.epochs)
+    _evaluate(model, test_ds)
+
+
+def _evaluate(model, test_ds):
+    test_audio = []
+    test_labels = []
+
+    for audio, label in test_ds:
+        test_audio.append(audio.numpy())
+        test_labels.append(label.numpy())
+
+    test_audio = np.array(test_audio)
+    test_labels = np.array(test_labels)
+
+    y_pred = np.argmax(model.predict(test_audio), axis=1)
+    y_true = test_labels
+
+    test_acc = sum(y_pred == y_true) / len(y_true)
+    print(f"Test set accuracy: {test_acc:.0%}")
+    print(f"Confustion matrix:\n{tf.math.confusion_matrix(y_true, y_pred)}")
 
 
 def _fit(model, train_ds, val_ds, epochs):
@@ -91,6 +118,9 @@ def _relabel_lookup_table(label_names, vocab):
 
 
 def _preprocess_datasets(all_ds, label_names, vocab):
+    # TODO: cleaner way of doing this?
+    # TODO: labeling logic may need to be more robust in presence of silence and other
+    # noise?
     if vocab:
         table = _relabel_lookup_table(label_names, vocab)
 

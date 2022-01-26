@@ -1,7 +1,6 @@
 import argparse
 import csv
 import io
-import logging
 import os
 import re
 import string
@@ -15,8 +14,6 @@ from magic_packet.cli import argtype
 from magic_packet.database import DatabaseManager, sql_table
 
 _EMPTY_SENTENCE_TOKEN = "[empty]"
-
-logger = logging.getLogger(__name__)
 
 
 @sql_table(primary_keys=["id"])
@@ -61,8 +58,9 @@ def add_to_parser(parser):
 def createdb(archive, database, overwrite, splits):
     database_exists = os.path.exists(database)
     if database_exists and not overwrite:
-        logger.error(f"Database {database} exists and overwrite is {overwrite}")
-        return
+        raise FileExistsError(
+            f"Database {database} already exists and --overwrite not specified"
+        )
 
     with DatabaseManager(database) as db_manager, tf.io.gfile.GFile(
         archive, "rb"
