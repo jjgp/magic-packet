@@ -65,6 +65,7 @@ def train(args):
 
     _fit(model, train_ds, val_ds, args.epochs)
     _evaluate(model, test_ds)
+    # TODO: save model
 
 
 def _evaluate(model, test_ds):

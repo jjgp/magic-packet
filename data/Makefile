@@ -18,10 +18,10 @@ vocab_dirs          = $(foreach word,$(VOCAB),$(corpus_dir)/$(word))
 
 .PHONY: help
 help:
-	@echo "make aligned:\n  mfa align audio clips\n"
-	@echo "make $(corpus_archive):\n  download the corpus archive\n"
-	@echo "make $(corpus_db):\n  create the courpus databse\n"
-	@echo "make extract:\n  extract clips of target vocab ($(VOCAB)) and OOV\n"
+	@echo "make aligned:\n    mfa align audio clips\n"
+	@echo "make $(corpus_archive):\n    download the corpus archive\n"
+	@echo "make $(corpus_db):\n    create the corpus databse\n"
+	@echo "make extract:\n    extract clips of target vocab ($(VOCAB)) and OOV\n"
 
 $(acoustic_model):
 	mfa model download acoustic $(MFA_ACOUSTIC_MODEL)
@@ -40,7 +40,7 @@ aligned:
 $(corpus_archive):
 	$(magicpkt) cv download \
 		. \
-		--lang=$(COMMON_VOICE_LANG) \
+		--language=$(COMMON_VOICE_LANG) \
 		--version=$(COMMON_VOICE_VERS)
 
 $(corpus_dir):
@@ -61,7 +61,7 @@ extract:
 		./$(corpus_db) \
 		./$(clips_dir) \
 		--oov-pct $(OOV_PCT) \
-		$(if $(VOCAB),--vocab $(VOCAB))
+		$(if $(VOCAB),$(foreach word,$(VOCAB),-v $(word)))
 
 lexicon.txt:
 	curl $(LEXICON_URL) -o $@
