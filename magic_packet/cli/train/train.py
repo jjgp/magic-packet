@@ -10,11 +10,13 @@ def add_to_parser(parser):
     parser.description = "model training"
     parser.set_defaults(func=train)
     parser.add_argument(
+        "-d",
         "--dataset",
         choices=["mini_speech_commands", "speech_commands"],
         default="mini_speech_commands",
     )
     parser.add_argument(
+        "-s",
         "--splits",
         nargs=3,
         default=["train[:80%]", "train[80%:90%]", "train[90%:]"],

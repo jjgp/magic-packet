@@ -49,6 +49,7 @@ def add_to_parser(parser):
         help="overwrite existing database if it exists",
     )
     parser.add_argument(
+        "-s",
         "--splits",
         nargs="+",
         default=["train", "dev", "test"],

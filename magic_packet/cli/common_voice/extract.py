@@ -36,6 +36,7 @@ def add_to_parser(parser):
         metavar="[0-100]",
     )
     parser.add_argument(
+        "-v",
         "--vocab",
         action="append",
         help="the target words to extract",
