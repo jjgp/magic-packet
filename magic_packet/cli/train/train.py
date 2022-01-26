@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Input
@@ -9,8 +7,6 @@ from tensorflow.keras.optimizers import Adam
 from magic_packet import datasets, features
 
 from . import models
-
-logger = logging.getLogger(__name__)
 
 
 def add_to_parser(parser):
