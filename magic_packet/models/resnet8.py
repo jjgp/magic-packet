@@ -31,4 +31,4 @@ def resnet8(inputs, n_outputs, n_blocks=3, filters=45, pooling=(4, 3)):
     x = AvgPool2D(pool_size=x.shape[1:3], strides=1)(x)
     x = Dense(n_outputs)(x)
     outputs = Reshape(target_shape=(n_outputs,))(x)
-    return Model(inputs, outputs)
+    return Model(inputs, outputs, name="resnet8")
