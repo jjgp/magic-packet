@@ -23,13 +23,13 @@ from magic_packet import datasets, features
 )
 @click.option("-e", "--epochs", type=int, default=10)
 @click.option("-v", "--vocab", multiple=True)
-@click.option("--save-weights", type=click.Path())
+@click.option("--save-model", type=click.Path())
 def train(**__):
     pass
 
 
 @train.resultcallback()
-def train_model(partial_model, dataset, split, epochs, vocab, save_weights):
+def train_model(partial_model, dataset, split, epochs, vocab, save_model):
     all_ds, info = datasets.load(dataset, split)
     label_names = info.features["label"].names
     train_ds, val_ds, test_ds = _preprocess_datasets(all_ds, label_names, vocab)
@@ -52,8 +52,8 @@ def train_model(partial_model, dataset, split, epochs, vocab, save_weights):
 
     _fit(model, train_ds, val_ds, epochs)
     _evaluate(model, test_ds)
-    if save_weights:
-        model.save_weights(save_weights)
+    if save_model:
+        tf.keras.models.save_model(model, save_model)
 
 
 def _evaluate(model, test_ds):
