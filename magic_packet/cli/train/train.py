@@ -41,9 +41,10 @@ def train_model(partial_model, dataset, split, epochs, vocab):
     model.summary()
 
     # TODO: may need to modify loss and metrics for class distributions
+    n_outputs = partial_model.keywords["n_outputs"]
     loss = (
         SparseCategoricalCrossentropy(from_logits=True)
-        if partial_model.keywords["n_outputs"] > 1
+        if n_outputs > 1
         else BinaryCrossentropy(from_logits=True)
     )
     model.compile(optimizer=Adam(), loss=loss, metrics=["accuracy"])
