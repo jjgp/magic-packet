@@ -39,7 +39,3 @@ def _tqdm_reporthook(pbar):
         previous_chunk = chunk
 
     return reporthook
-
-
-if __name__ == "__main__":
-    download()

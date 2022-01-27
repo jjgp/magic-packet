@@ -95,7 +95,3 @@ def _oov_clips(vocab):
 
 def _sql_sample_condition(sample_pct):
     return f"abs(cast(random() as real)) / 9223372036854775808 < {sample_pct}"
-
-
-if __name__ == "__main__":
-    extract()

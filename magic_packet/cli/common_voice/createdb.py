@@ -79,7 +79,3 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
 
         db_manager.insert(Clips(clip_id, fname, sentence, split))
         db_manager.insertmany(words)
-
-
-if __name__ == "__main__":
-    createdb()
