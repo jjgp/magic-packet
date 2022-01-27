@@ -48,7 +48,7 @@ class SQL:
 
 
 def sql_table(primary_keys=[]):
-    def _namedtuple_decorator(_namedtuple):
+    def decorator(_namedtuple):
         implemented_annotations = {int: "integer", str: "varchar"}
         table_name = _namedtuple.__name__.lower()
 
@@ -68,11 +68,11 @@ def sql_table(primary_keys=[]):
         _sql.tableattr(table_name, columns, annotations, primary_keys)
         return _namedtuple
 
-    return _namedtuple_decorator
+    return decorator
 
 
 def sql_join(a, b, join_type, on, distinct=False):
-    def _namedtuple_decorator(_namedtuple):
+    def decorator(_namedtuple):
         if hasattr(_namedtuple, _DECORATED_ATTR):
             _sql = getattr(_namedtuple, _DECORATED_ATTR)
         else:
@@ -92,4 +92,4 @@ def sql_join(a, b, join_type, on, distinct=False):
         )
         return _namedtuple
 
-    return _namedtuple_decorator
+    return decorator
