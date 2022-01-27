@@ -1,3 +1,4 @@
+import click
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Input
@@ -6,52 +7,41 @@ from tensorflow.keras.optimizers import Adam
 
 from magic_packet import datasets, features
 
-from . import models
+
+@click.group()
+@click.option(
+    "-d",
+    "--dataset",
+    type=click.Choice(["mini_speech_commands", "speech_commands"]),
+    default="mini_speech_commands",
+)
+@click.option(
+    "-s",
+    "--split",
+    multiple=True,
+    default=["train[:80%]", "train[80%:90%]", "train[90%:]"],
+)
+@click.option("-e", "--epochs", type=int, default=10)
+@click.option("-v", "--vocab", multiple=True)
+def train(**__):
+    pass
 
 
-def add_to_parser(parser):
-    parser.description = "model training"
-    parser.set_defaults(func=train)
-    parser.add_argument(
-        "-d",
-        "--dataset",
-        choices=["mini_speech_commands", "speech_commands"],
-        default="mini_speech_commands",
-    )
-    parser.add_argument(
-        "-s",
-        "--split",
-        nargs=3,
-        default=["train[:80%]", "train[80%:90%]", "train[90%:]"],
-        help="the train, validation, and test split as specified by the TFDS API",
-    )
-    parser.add_argument("-e", "--epochs", type=int, default=10)
-    parser.add_argument("-v", "--vocab", action="append")
-
-    subparsers = parser.add_subparsers(required=True)
-    models.add_to_subparsers(subparsers)
-
-
-def train(args):
-    all_ds, info = datasets.load(args.dataset, args.split)
-    label_names, vocab = info.features["label"].names, args.vocab
+@train.resultcallback()
+def train_model(partial_model, dataset, split, epochs, vocab):
+    all_ds, info = datasets.load(dataset, split)
+    label_names = info.features["label"].names
     train_ds, val_ds, test_ds = _preprocess_datasets(all_ds, label_names, vocab)
 
     for mfcc, _ in train_ds.take(1):
         input_shape = mfcc.shape
 
-    if vocab:
-        n_outputs = len(vocab)
-        n_outputs += 1 if n_outputs > 1 else 0  # multi vs binary classification
-    else:
-        n_outputs = len(label_names)
-
-    model = args.model(args)
     inputs = Input(shape=input_shape)
-    model = model(inputs, n_outputs)
+    model = partial_model(inputs)
     model.summary()
 
     # TODO: may need to modify loss and metrics for class distributions
+    n_outputs = partial_model.keywords["n_outputs"]
     loss = (
         SparseCategoricalCrossentropy(from_logits=True)
         if n_outputs > 1
@@ -59,7 +49,7 @@ def train(args):
     )
     model.compile(optimizer=Adam(), loss=loss, metrics=["accuracy"])
 
-    _fit(model, train_ds, val_ds, args.epochs)
+    _fit(model, train_ds, val_ds, epochs)
     _evaluate(model, test_ds)
     # TODO: save model
 

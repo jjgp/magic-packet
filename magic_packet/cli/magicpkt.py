@@ -1,23 +1,17 @@
-import argparse
-from collections import defaultdict
+import click
 
-from magic_packet.cli import common_voice, train
-
-_ALIASES = defaultdict(list, {"common_voice": ["cv"]})
+from .common_voice import common_voice
+from .train import train
 
 
-def main():
-    parser = argparse.ArgumentParser(description="the magic packet cli")
-    subparsers = parser.add_subparsers(required=True)
+@click.group()
+def magicpkt():
+    pass
 
-    for module in (common_voice, train):
-        name = module.__name__.split(".")[-1]
-        subparser = subparsers.add_parser(name, aliases=_ALIASES[name])
-        module.add_to_parser(subparser)
 
-    args = parser.parse_args()
-    args.func(args)
+magicpkt.add_command(common_voice)
+magicpkt.add_command(train)
 
 
 if __name__ == "__main__":
-    main()
+    magicpkt()

@@ -1,4 +1,3 @@
-import argparse
 import csv
 import io
 import os
@@ -7,10 +6,10 @@ import string
 import tarfile
 from typing import NamedTuple
 
+import click
 import tensorflow as tf
 from tqdm import tqdm
 
-from magic_packet.cli import argtype
 from magic_packet.database import DatabaseManager, sql_table
 
 _EMPTY_SENTENCE_TOKEN = "[empty]"
@@ -31,62 +30,32 @@ class Words(NamedTuple):
     word: str
 
 
-def add_to_parser(parser):
-    parser.description = "create the database for the common voice archive contents"
-    parser.add_argument(
-        "archive",
-        type=argtype.tarfile,
-        help="the path to the common voice archive file",
-    )
-    parser.add_argument("database", help="the path to the corpus database")
-    parser.add_argument(
-        "--overwrite",
-        default=False,
-        action=argparse.BooleanOptionalAction,
-        help="overwrite existing database if it exists",
-    )
-    parser.add_argument(
-        "-s",
-        "--splits",
-        nargs="+",
-        default=["train", "dev", "test"],
-        help="the splits to include in the database",
-    )
-    parser.set_defaults(func=main)
-
-
-def createdb(archive, database, overwrite, splits):
-    database_exists = os.path.exists(database)
-    if database_exists and not overwrite:
-        raise FileExistsError(
-            f"Database {database} already exists and --overwrite not specified"
-        )
-
+@click.command()
+@click.argument("archive")
+@click.argument("database", type=click.Path())
+@click.option("-s", "--split", multiple=True, default=["train", "dev", "test"])
+def createdb(archive, database, split):
     with DatabaseManager(database) as db_manager, tf.io.gfile.GFile(
         archive, "rb"
     ) as gfile, tarfile.open(mode="r:*", fileobj=gfile) as tar:
-        if database_exists:
+        if os.path.exists(database):
             db_manager.drop(Clips, Words)
         db_manager.create(Clips, Words)
 
-        n_splits = len(splits)
+        n_splits = len(split)
         while n_splits:
             member = tar.next()
             basename = os.path.basename(member.name)
             if "tsv" not in basename:
                 continue
 
-            split = os.path.splitext(basename)[0]
-            if split in splits:
+            tsv_name = os.path.splitext(basename)[0]
+            if tsv_name in split:
                 with tar.extractfile(member) as tsv_fobj:
-                    _insert_split_into_database(split, tsv_fobj, db_manager)
+                    _insert_split_into_database(tsv_name, tsv_fobj, db_manager)
                 n_splits -= 1
 
         db_manager.commit()
-
-
-def main(args):
-    createdb(args.archive, args.database, args.overwrite, args.splits)
 
 
 def _insert_split_into_database(split, tsv_fobj, db_manager):
@@ -110,10 +79,3 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
 
         db_manager.insert(Clips(clip_id, fname, sentence, split))
         db_manager.insertmany(words)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    add_to_parser(parser)
-    args = parser.parse_args()
-    args.func(args)

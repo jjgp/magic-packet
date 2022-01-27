@@ -1,7 +1,7 @@
-import argparse
 import json
 import urllib.request
 
+import click
 from tqdm import tqdm
 
 _TAR_FORMAT = "cv-corpus-{}-{}.tar.gz"
@@ -10,14 +10,10 @@ _URL_FORMAT = (
 )
 
 
-def add_to_parser(parser):
-    parser.description = "download the common voice archive file"
-    parser.add_argument("directory", help="the download directory")
-    parser.add_argument("-l", "--language", default="en")
-    parser.add_argument("-v", "--version", default="7.0-2021-07-21")
-    parser.set_defaults(func=main)
-
-
+@click.command()
+@click.argument("directory")
+@click.option("-l", "--language", default="en")
+@click.option("-v", "--version", default="7.0-2021-07-21")
 def download(directory, language, version):
     tar = _TAR_FORMAT.format(version, language)
     url = _URL_FORMAT.format(version, tar)
@@ -32,10 +28,6 @@ def download(directory, language, version):
         )
 
 
-def main(args):
-    download(args.directory, args.language, args.version)
-
-
 def _tqdm_reporthook(pbar):
     previous_chunk = 0
 
@@ -47,10 +39,3 @@ def _tqdm_reporthook(pbar):
         previous_chunk = chunk
 
     return reporthook
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    add_to_parser(parser)
-    args = parser.parse_args()
-    args.func(args)

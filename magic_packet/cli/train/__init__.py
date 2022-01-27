@@ -1,3 +1,6 @@
-from .train import add_to_parser
+from . import models
+from .train import train
 
-__all__ = ["add_to_parser"]
+train.add_command(models.resnet8)
+
+__all__ = ["train"]

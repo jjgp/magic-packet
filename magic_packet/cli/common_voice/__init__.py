@@ -1,13 +1,16 @@
-def add_to_parser(parser):
-    from . import createdb, download, extract
+import click
 
-    parser.description = "subcommands to assemble the common voice dataset"
-    subparsers = parser.add_subparsers(required=True)
-
-    for module in (createdb, download, extract):
-        name = module.__name__.split(".")[-1]
-        subparser = subparsers.add_parser(name)
-        module.add_to_parser(subparser)
+from . import createdb, download, extract
 
 
-__all__ = ["add_to_parser"]
+@click.group()
+def common_voice():
+    pass
+
+
+common_voice.add_command(createdb.createdb)
+common_voice.add_command(download.download)
+common_voice.add_command(extract.extract)
+
+
+__all__ = ["common_voice"]

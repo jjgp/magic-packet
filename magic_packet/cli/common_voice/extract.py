@@ -1,47 +1,26 @@
-import argparse
 import itertools
 import os
 import tarfile
 from collections import namedtuple
 
+import click
 from tqdm import tqdm
 
-from magic_packet.cli import argtype
 from magic_packet.database import DatabaseManager, sql_join
 
 from .createdb import Clips, Words
 
 
-def add_to_parser(parser):
-    parser.description = "extract clips from the common voice archive"
-    parser.add_argument(
-        "archive",
-        type=argtype.tarfile,
-        help="the path to the common voice archive file",
-    )
-    parser.add_argument(
-        "database", type=argtype.path, help="the path to the corpus database"
-    )
-    parser.add_argument(
-        "output_directory", help="the directory to write extracted vocab"
-    )
-    parser.add_argument(
-        "--oov-pct",
-        type=int,
-        choices=range(0, 101),
-        help=(
-            "the percentage of OOV clips to extract."
-            "if vocab is unspecified, this is ignored."
-        ),
-        metavar="[0-100]",
-    )
-    parser.add_argument(
-        "-v",
-        "--vocab",
-        action="append",
-        help="the target words to extract",
-    )
-    parser.set_defaults(func=main)
+@click.command()
+@click.argument("archive", type=click.Path(exists=True))
+@click.argument("database", type=click.Path(exists=True))
+@click.argument("output_directory")
+@click.option("--oov-pct", type=click.FloatRange(1e-5, 100, clamp=True))
+@click.option("-v", "--vocab", multiple=True)
+def extract(archive, database, output_directory, oov_pct, vocab):
+    vocab_clips, oov_clips = query_clips(database, vocab, oov_pct)
+    clips = itertools.chain(vocab_clips, oov_clips) if oov_clips else vocab_clips
+    extract_clips(clips, archive, output_directory)
 
 
 def extract_clips(clips, archive, output_directory):
@@ -71,12 +50,6 @@ def extract_clips(clips, archive, output_directory):
 
                 n_clips -= 1
                 pbar.update(1)
-
-
-def main(args):
-    vocab_clips, oov_clips = query_clips(args.database, args.vocab, args.oov_pct)
-    clips = itertools.chain(vocab_clips, oov_clips) if oov_clips else vocab_clips
-    extract_clips(clips, args.archive, args.output_directory)
 
 
 def query_clips(database, vocab=None, oov_pct=None):
@@ -122,10 +95,3 @@ def _oov_clips(vocab):
 
 def _sql_sample_condition(sample_pct):
     return f"abs(cast(random() as real)) / 9223372036854775808 < {sample_pct}"
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    add_to_parser(parser)
-    args = parser.parse_args()
-    args.func(args)
