@@ -14,7 +14,6 @@ clips_dir           = $(corpus_dir)/clips
 pythonpath          = $(abspath ..)
 python              = PYTHONPATH=$(pythonpath) python -m
 magicpkt            = $(python) magic_packet.cli.magicpkt
-vocab_dirs          = $(foreach word,$(VOCAB),$(corpus_dir)/$(word))
 
 .PHONY: help
 help:
@@ -38,7 +37,7 @@ aligned:
 		--overwrite
 
 $(corpus_archive):
-	$(magicpkt) cv download \
+	$(magicpkt) common-voice download \
 		. \
 		--language=$(COMMON_VOICE_LANG) \
 		--version=$(COMMON_VOICE_VERS)
@@ -47,16 +46,15 @@ $(corpus_dir):
 	mkdir -p $(corpus_dir)
 
 $(corpus_db): $(corpus_dir)
-	$(magicpkt) cv createdb \
+	$(magicpkt) common-voice createdb \
 		./$(corpus_archive) \
 		./$(corpus_db) \
-		--overwrite \
-		--splits train dev test
+		-s train -s dev -s test
 
 .PHONY: extract
 extract: OOV_PCT := 5
 extract:
-	$(magicpkt) cv extract \
+	$(magicpkt) common-voice extract \
 		./$(corpus_archive) \
 		./$(corpus_db) \
 		./$(clips_dir) \

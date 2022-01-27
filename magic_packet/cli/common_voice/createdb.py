@@ -34,7 +34,7 @@ class Words(NamedTuple):
 @click.argument("archive")
 @click.argument("database", type=click.Path())
 @click.option("-s", "--split", multiple=True, default=["train", "dev", "test"])
-def createdb(archive, database, splits):
+def createdb(archive, database, split):
     with DatabaseManager(database) as db_manager, tf.io.gfile.GFile(
         archive, "rb"
     ) as gfile, tarfile.open(mode="r:*", fileobj=gfile) as tar:
@@ -42,17 +42,17 @@ def createdb(archive, database, splits):
             db_manager.drop(Clips, Words)
         db_manager.create(Clips, Words)
 
-        n_splits = len(splits)
+        n_splits = len(split)
         while n_splits:
             member = tar.next()
             basename = os.path.basename(member.name)
             if "tsv" not in basename:
                 continue
 
-            split = os.path.splitext(basename)[0]
-            if split in splits:
+            tsv_name = os.path.splitext(basename)[0]
+            if tsv_name in split:
                 with tar.extractfile(member) as tsv_fobj:
-                    _insert_split_into_database(split, tsv_fobj, db_manager)
+                    _insert_split_into_database(tsv_name, tsv_fobj, db_manager)
                 n_splits -= 1
 
         db_manager.commit()
