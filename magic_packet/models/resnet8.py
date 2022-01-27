@@ -2,26 +2,8 @@ import tensorflow as tf
 from tensorflow.keras.layers import Add, AvgPool2D, BatchNormalization, Conv2D, Dense
 from tensorflow.keras.models import Model
 
-_N_BLOCKS = 3
-_FILTERS = 45
-_POOLING = (4, 3)
 
-
-def add_to_parser(parser):
-    parser.description = "the resnet8 model"
-    parser.add_argument("--n_blocks", type=int, default=_N_BLOCKS)
-    parser.add_argument("--filters", type=int, default=_FILTERS)
-    parser.add_argument("--pooling", nargs="+", type=int, default=_POOLING)
-    parser.set_defaults(model=_model)
-
-
-def _model(args):
-    return lambda inputs, n_outputs: resnet8(
-        inputs, n_outputs, args.n_blocks, args.filters, tuple(args.pooling)
-    )
-
-
-def resnet8(inputs, n_outputs, n_blocks=_N_BLOCKS, filters=_FILTERS, pooling=_POOLING):
+def resnet8(inputs, n_outputs, n_blocks=3, filters=45, pooling=(4, 3)):
     convargs = dict(
         filters=filters,
         kernel_size=3,
