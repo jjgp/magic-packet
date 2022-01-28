@@ -1,5 +1,11 @@
-import tensorflow as tf
-from tensorflow.keras.layers import Add, AvgPool2D, BatchNormalization, Conv2D, Dense
+from tensorflow.keras.layers import (
+    Add,
+    AvgPool2D,
+    BatchNormalization,
+    Conv2D,
+    Dense,
+    Reshape,
+)
 from tensorflow.keras.models import Model
 
 
@@ -24,5 +30,5 @@ def resnet8(inputs, n_outputs, n_blocks=3, filters=45, pooling=(4, 3)):
 
     x = AvgPool2D(pool_size=x.shape[1:3], strides=1)(x)
     x = Dense(n_outputs)(x)
-    outputs = tf.reshape(x, shape=(-1, n_outputs))
+    outputs = Reshape(target_shape=(n_outputs,))(x)
     return Model(inputs, outputs, name="resnet8")
