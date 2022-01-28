@@ -18,8 +18,8 @@ RUN python -m venv venv
 
 ENV PATH="/usr/magic-packet/venv/bin:$PATH"
 
-# RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# RUN pip install -e .
+RUN pip install -e .
 
-# CMD ["magicpkt", "--help"]
+CMD ["magicpkt", "--help"]
