@@ -1,9 +1,10 @@
 from setuptools import find_packages, setup
 
 install_requires = [
+    "click >= 8.0",
     "numpy >= 1.19",
     "pydub >= 0.25",
-    "tensorflow >= 2.6",
+    "tensorflow >= 2.7",
     "tensorflow-datasets >= 4.4",
     "tqdm >= 4.62",
 ]
