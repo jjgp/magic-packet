@@ -1,4 +1,14 @@
-FROM python:3.9-slim-buster
+FROM nvidia/cuda:11.0-base
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        --no-install-recommends \
+        software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa -y \
+    && apt-get update \
+    && apt-get install -y python3.9-dev python3.9-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
 
 WORKDIR /usr/magic-packet
 
@@ -6,8 +16,10 @@ COPY . .
 
 RUN python -m venv venv
 
-RUN pip install --no-cache-dir -e .
-
 ENV PATH="/usr/magic-packet/venv/bin:$PATH"
 
-CMD ["magicpkt", "--help"]
+# RUN pip install --no-cache-dir -r requirements.txt
+
+# RUN pip install -e .
+
+# CMD ["magicpkt", "--help"]
