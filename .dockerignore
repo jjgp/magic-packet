@@ -1,0 +1,12 @@
+*.egg-info
+.git
+.gitignore
+.pre-commit-config.yaml
+.vscode
+__pycache__
+data
+docker
+environment
+mlops
+notebooks
+README.md
