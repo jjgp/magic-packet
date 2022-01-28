@@ -1,0 +1,4 @@
+{
+    "image": "jjgp/magic-packet:latest",
+    "extensions": ["ms-python.python"]
+}
