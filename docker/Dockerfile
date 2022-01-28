@@ -2,6 +2,7 @@ FROM nvidia/cuda:11.0-base
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         --no-install-recommends \
+        ffmpeg \
         software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt-get update \
