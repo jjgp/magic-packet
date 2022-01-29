@@ -1,9 +1,9 @@
 FROM nvidia/cuda:11.2.0-cudnn8-runtime-ubuntu20.04
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        ffmpeg \
-        libavcodec-extra \
-        software-properties-common \
+    ffmpeg \
+    libavcodec-extra \
+    software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt-get update \
     && apt-get install -y python3.9-dev python3.9-venv \
@@ -15,11 +15,7 @@ WORKDIR /usr/magic-packet
 
 COPY . .
 
-RUN python -m venv venv
-
-ENV PATH="/usr/magic-packet/venv/bin:$PATH"
-
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 RUN pip install -e .
 
