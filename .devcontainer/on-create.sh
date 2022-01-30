@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-apt-get update && apt-get install -y \
-    ffmpeg \
-    git \
-    libavcodec-extra
+pip install --user \
+    -r requirements.txt \
+    -r requirements-extras.txt \
+    -e .
 
-pip install --user -r requirements.txt
+# pip install -e .
 
-pip install -e .
+pre-commit install
