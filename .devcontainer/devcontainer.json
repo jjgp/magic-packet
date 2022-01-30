@@ -1,5 +1,5 @@
 {
-    "image": "jjgp/magic-packet:devcontainer",
+    "image": "jjgp/magic-packet:devel",
     "extensions": ["ms-python.python"],
     "onCreateCommand": ".devcontainer/on-create.sh",
     "remoteEnv": {
