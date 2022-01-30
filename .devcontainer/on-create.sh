@@ -5,6 +5,4 @@ pip install --user \
     -r requirements-extras.txt \
     -e .
 
-# pip install -e .
-
 pre-commit install
