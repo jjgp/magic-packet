@@ -1,11 +1,8 @@
 import click
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.layers import Input
-from tensorflow.keras.losses import BinaryCrossentropy, SparseCategoricalCrossentropy
-from tensorflow.keras.optimizers import Adam
 
 from magic_packet import datasets, features
+from magic_packet.cli.utils.lazy_module import tensorflow as tf
 
 
 @click.group()
@@ -37,18 +34,18 @@ def train_model(partial_model, dataset, split, epochs, vocab, save_model):
     for mfcc, _ in train_ds.take(1):
         input_shape = mfcc.shape
 
-    inputs = Input(shape=input_shape)
+    inputs = tf.keras.layers.Input(shape=input_shape)
     model = partial_model(inputs)
     model.summary()
 
     # TODO: may need to modify loss and metrics for class distributions
     n_outputs = partial_model.keywords["n_outputs"]
     loss = (
-        SparseCategoricalCrossentropy(from_logits=True)
+        tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
         if n_outputs > 1
-        else BinaryCrossentropy(from_logits=True)
+        else tf.keras.losses.BinaryCrossentropy(from_logits=True)
     )
-    model.compile(optimizer=Adam(), loss=loss, metrics=["accuracy"])
+    model.compile(optimizer=tf.keras.optimizers.Adam(), loss=loss, metrics=["accuracy"])
 
     _fit(model, train_ds, val_ds, epochs)
     _evaluate(model, test_ds)

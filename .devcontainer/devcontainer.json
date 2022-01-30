@@ -1,6 +1,6 @@
 {
     "image": "jjgp/magic-packet:devel",
     "extensions": ["ms-python.python"],
-    "postCreateCommand": ["pre-commit", "install"],
+    "postCreateCommand": ".devcontainer/post-create.sh",
     "runArgs": ["--platform", "linux/amd64"]
 }
