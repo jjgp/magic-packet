@@ -15,8 +15,6 @@ WORKDIR /usr/magic-packet
 
 COPY . .
 
-RUN pip install -r requirements.txt
-
-RUN pip install -e .
+RUN pip install -r requirements.txt -e .
 
 CMD ["magicpkt", "--help"]

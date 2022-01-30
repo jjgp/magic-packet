@@ -2,7 +2,6 @@ PLATFORM  ?= linux/amd64
 
 repository = jjgp/magic-packet
 sha        = $(shell git rev-parse --short HEAD)
-variants   = $(notdir $(shell find . -type f -name "*.Dockerfile"))
 
 .PHONY: Dockerfile
 Dockerfile:
@@ -11,8 +10,9 @@ Dockerfile:
 		-f Dockerfile \
 		$(abspath ..)
 
-.PHONY: $(variants)
-$(variants): %.Dockerfile:
+.PHONY: devel.Dockerfile
+devel.Dockerfile: %.Dockerfile:
 	docker build --platform $(PLATFORM) \
 		-t $(repository):$(sha)-$* \
-		-< $@
+		-f $@ \
+		$(abspath ..)/environment/linux
