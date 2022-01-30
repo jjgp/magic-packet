@@ -13,7 +13,9 @@ dependencies:
   - kaldi=5.5.992
   - libsndfile=1.0.31
   - llvmlite=0.37.0
+  - matplotlib=3.5.1
   - numba=0.54.1
+  - numpy=1.19.5
   - pip=21.3.1
   - pre-commit=2.16.0
   - python=3.9

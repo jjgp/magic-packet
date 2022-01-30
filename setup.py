@@ -11,7 +11,13 @@ install_requires = [
 
 extras_require = {
     "dev": ["black", "flake8 >= 4.0", "isort >= 5.9", "pre-commit >= 2.16"],
-    "mlops": ["cryptography >= 36.0"],
+    "mlops": ["cryptography >= 36.0", "jupyter >= 1.0"],
+    "notebooks": [
+        "jupyter >= 1.0",
+        "matplotlib >= 3.5",
+        "numpy >= 1.19",
+        "seaborn >= 0.11",
+    ],
 }
 
 setup(

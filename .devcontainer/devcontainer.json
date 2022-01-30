@@ -1,4 +1,9 @@
 {
-    "image": "jjgp/magic-packet:latest",
-    "extensions": ["ms-python.python"]
+    "image": "jjgp/magic-packet:devel",
+    "extensions": ["ms-python.python"],
+    "onCreateCommand": ".devcontainer/on-create.sh",
+    "remoteEnv": {
+        "PATH": "${containerEnv:PATH}:/root/.local/bin"
+    },
+    "runArgs": ["--platform", "linux/amd64"]
 }
