@@ -15,6 +15,9 @@ WORKDIR /usr/magic-packet
 
 COPY . .
 
-RUN pip install -r requirements.txt -e .
+ENV PATH="/usr/magic-packet/venv/bin:$PATH"
+
+RUN python -m venv venv \
+    && pip install -r requirements.txt .
 
 CMD ["magicpkt", "--help"]
