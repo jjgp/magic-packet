@@ -7,9 +7,9 @@ import tarfile
 from typing import NamedTuple
 
 import click
-import tensorflow as tf
 from tqdm import tqdm
 
+from magic_packet.cli.utils.lazy_module import tensorflow as tf
 from magic_packet.database import DatabaseManager, sql_table
 
 _EMPTY_SENTENCE_TOKEN = "[empty]"

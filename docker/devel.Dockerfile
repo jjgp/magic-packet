@@ -1,7 +1,8 @@
-FROM python:3.9.10-slim-buster
+FROM continuumio/miniconda3
 
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    git \
-    libavcodec-extra \
-    && rm -rf /var/lib/apt/lists/*
+COPY . .
+
+RUN ./apt-get.sh && rm -rf /var/lib/apt/lists/*
+
+RUN conda env create -f amd64.yml \
+    && echo "conda activate magic-packet" >> ~/.bashrc
