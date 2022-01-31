@@ -1,7 +1,19 @@
+import _ from "webrtc-adapter"; // shims the getUserMedia to support a wider range of browsers
 import logo from "./logo.svg";
 import "./App.css";
 
-function App() {
+const constraints = (window.constraints = {
+  audio: true,
+  video: false,
+});
+
+async function getUserMedia() {
+  await navigator.mediaDevices.getUserMedia(constraints);
+}
+
+async function App() {
+  await getUserMedia();
+
   return (
     <div className="App">
       <header className="App-header">
