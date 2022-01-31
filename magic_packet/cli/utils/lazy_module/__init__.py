@@ -16,5 +16,9 @@ class LazyModule:
         return getattr(self.module, name)
 
 
+def lazy_module(name):
+    return LazyModule(name)
+
+
 def __getattr__(name):
     return LazyModule(name)
