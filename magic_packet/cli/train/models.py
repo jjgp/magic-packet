@@ -2,9 +2,9 @@ import functools
 
 import click
 
-from magic_packet.cli.utils.lazy_module import lazy_module
+from magic_packet.cli.utils.lazy_module import LazyModule
 
-models = lazy_module("magic_packet.models")
+models = LazyModule("magic_packet.models")
 
 
 @click.command()

@@ -1,11 +1,11 @@
 import click
 import numpy as np
 
-from magic_packet.cli.utils.lazy_module import lazy_module
+from magic_packet.cli.utils.lazy_module import LazyModule
 from magic_packet.cli.utils.lazy_module import tensorflow as tf
 
-datasets = lazy_module("magic_packet.datasets")
-features = lazy_module("magic_packet.features")
+datasets = LazyModule("magic_packet.datasets")
+features = LazyModule("magic_packet.features")
 
 
 @click.group()
