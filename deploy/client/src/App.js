@@ -1,28 +1,18 @@
-import logo from "./logo.svg";
 import "./App.css";
-import { useUserMedia } from "./providers/userMedia";
-import { useEffect } from "react";
+import AudioVisualizer from "./components/AudioVisualizer";
+import { useUserMedia } from "./providers/UserMedia";
 
 const App = () => {
-  const { start } = useUserMedia();
-
-  useEffect(start, [start]);
+  const { stream, start, stop } = useUserMedia();
+  const toggleMic = () => (stream ? stop() : start());
 
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <button className="App-btn" onClick={toggleMic}>
+          {stream ? "Close Microphone" : "Open Microphone"}
+        </button>
+        <AudioVisualizer />
       </header>
     </div>
   );

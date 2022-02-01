@@ -1,4 +1,4 @@
-/* Adapted from: https://github.com/onoya/react-mic-audio-visualizer */
+/* Adapted from: https://github.com/onoya/react-mic-audio-visualizer/blob/master/src/contexts/MediaStreamContext.tsx */
 
 import "webrtc-adapter"; // shims the getUserMedia to support a wider range of browsers
 import React, {

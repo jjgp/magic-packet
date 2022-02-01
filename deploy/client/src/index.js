@@ -3,8 +3,8 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import AudioStream from "./providers/audioStream";
-import UserMedia from "./providers/userMedia";
+import AudioStream from "./providers/AudioStream";
+import UserMedia from "./providers/UserMedia";
 
 ReactDOM.render(
   <React.StrictMode>
