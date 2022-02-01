@@ -1,6 +1,6 @@
 import logo from "./logo.svg";
 import "./App.css";
-import { useUserMedia } from "./media/userMedia";
+import { useUserMedia } from "./providers/userMedia";
 import { useEffect } from "react";
 
 const App = () => {
