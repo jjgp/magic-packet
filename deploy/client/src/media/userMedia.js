@@ -10,7 +10,7 @@ import React, {
 } from "react";
 
 const UserMediaContext = createContext({
-  stream: undefined,
+  stream: null,
   start: () => {},
   stop: () => {},
 });
@@ -27,16 +27,14 @@ const UserMedia = ({ children, mediaStreamConstraints }) => {
   }, [mediaStreamConstraints]);
 
   const stopTracks = (stream) =>
-    stream.getTracks().forEach((track) => track.stop());
+    stream && stream.getTracks().forEach((track) => track.stop());
 
   const stop = useCallback(() => {
-    if (stream) {
-      stopTracks(stream);
-      setStream(undefined);
-    }
+    stopTracks(stream);
+    setStream(null);
   }, [stream]);
 
-  useEffect(() => () => stream && stopTracks(stream), [stream]);
+  useEffect(() => () => stopTracks(stream), [stream]);
 
   return (
     <UserMediaContext.Provider
