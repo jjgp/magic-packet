@@ -1,10 +1,10 @@
 import logo from "./logo.svg";
 import "./App.css";
-import { useMediaStream } from "./media/userMedia";
+import { useUserMedia } from "./media/userMedia";
 import { useEffect } from "react";
 
 const App = () => {
-  const { start } = useMediaStream();
+  const { start } = useUserMedia();
 
   useEffect(start, [start]);
 

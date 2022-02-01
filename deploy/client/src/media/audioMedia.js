@@ -1,31 +1,30 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useMediaStream } from "./userMedia";
+import { useUserMedia } from "./userMedia";
 
-const audioMediaState = (audioContext = null, audioSource = null) => ({
-  audioContext,
-  audioSource,
+const audioStreamState = (context = null, source = null) => ({
+  context,
+  source,
 });
 
-const AudioMediaContext = createContext(audioMediaState());
+const AudioStreamContext = createContext(audioStreamState());
 
-export const useAudioSource = () => useContext(AudioMediaContext);
+export const useAudioStream = () => useContext(AudioStreamContext);
 
-const AudioMedia = ({ children }) => {
-  const [state, setState] = useState(audioMediaState());
-  const { stream } = useMediaStream();
+const AudioStream = ({ children }) => {
+  const [state, setState] = useState(audioStreamState());
+  const { stream } = useUserMedia();
 
   useEffect(() => {
     if (stream) {
-      const audioContext = new (window.AudioContext ||
-        window.webkitAudioContext)();
-      const audioSource = audioContext.createMediaStreamSource(stream);
-      setState(audioMediaState(audioContext, audioSource));
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      const source = context.createMediaStreamSource(stream);
+      setState(audioStreamState(context, source));
     }
   }, [stream]);
 
-  const cleanup = ({ audioContext, audioSource }) => {
-    audioContext && audioContext.close();
-    audioSource && audioSource.disconnect();
+  const cleanup = ({ context, source }) => {
+    context && context.close();
+    source && source.disconnect();
   };
 
   useEffect(() => {
@@ -37,8 +36,8 @@ const AudioMedia = ({ children }) => {
   }, [state, stream]);
 
   return (
-    <AudioMediaContext.Provider value={{ ...state }} children={children} />
+    <AudioStreamContext.Provider value={{ ...state }} children={children} />
   );
 };
 
-export default AudioMedia;
+export default AudioStream;

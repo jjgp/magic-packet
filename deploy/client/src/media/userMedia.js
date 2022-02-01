@@ -15,7 +15,7 @@ const UserMediaContext = createContext({
   stop: () => {},
 });
 
-export const useMediaStream = () => useContext(UserMediaContext);
+export const useUserMedia = () => useContext(UserMediaContext);
 
 const UserMedia = ({ children, mediaStreamConstraints }) => {
   const [stream, setStream] = useState();
