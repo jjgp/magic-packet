@@ -47,52 +47,55 @@ const AudioVisualizer = ({ displaySeconds, ...props }) => {
   const slicePosRef = createRef(0);
 
   useEffect(() => {
-    // TODO: clear rect on toggle of microphone
     if (!analyser) {
       return;
     }
 
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
+    }
+    const { height, width } = canvas;
+
+    const context = canvas.getContext("2d");
+    context.lineWidth = 2;
+    context.strokeStyle = "#fff";
+    context.clearRect(0, 0, width, height);
+
     let animationFrame;
     const data = new Uint8Array(analyser.frequencyBinCount);
     const sampleRate = analyser.context.sampleRate;
+    const sliceWidth = width / (sampleRate * displaySeconds);
 
     const draw = () => {
       analyser.getByteTimeDomainData(data);
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const context = canvas.getContext("2d");
-        const { height, width } = canvas;
-        let x = slicePosRef.current;
-        const sliceWidth = width / (sampleRate * displaySeconds);
-        const dataWidth = sliceWidth * 2 * data.length;
 
-        if (context) {
-          context.lineWidth = 2;
-          context.strokeStyle = "#fff";
-          if (x + dataWidth < width) {
-            context.clearRect(x, 0, dataWidth, height);
-          } else {
-            context.clearRect(x, 0, width, height);
-            context.clearRect(0, 0, dataWidth - (width - x), height);
-          }
+      let x = slicePosRef.current;
+      const drawWidth = data.length * sliceWidth + 2 * sliceWidth;
 
-          context.beginPath();
-          context.moveTo(x, height / 2);
-          for (const item of data) {
-            const y = (item / 255.0) * height;
-            context.lineTo(x, y);
-            x += sliceWidth;
-            if (x > width) {
-              context.lineTo(width, height / 2);
-              context.moveTo(0, height / 2);
-            }
-            x %= width;
-          }
-          context.lineTo(x, height / 2);
-          context.stroke();
-          slicePosRef.current = x;
-        }
+      if (x + drawWidth < width) {
+        context.clearRect(Math.floor(x), 0, Math.ceil(drawWidth), height);
+      } else {
+        context.clearRect(x, 0, width, height);
+        context.clearRect(0, 0, drawWidth - (width - x), height);
       }
+
+      context.beginPath();
+      context.moveTo(x, height / 2);
+      for (const item of data) {
+        const y = (item / 255.0) * height;
+        context.lineTo(x, y);
+        x += sliceWidth;
+        if (x > width) {
+          context.lineTo(width, height / 2);
+          context.moveTo(0, height / 2);
+        }
+        x %= width;
+      }
+      context.lineTo(x, height / 2);
+      context.stroke();
+      slicePosRef.current = x;
+
       animationFrame = requestAnimationFrame(draw);
     };
     draw();
