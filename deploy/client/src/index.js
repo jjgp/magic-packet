@@ -6,16 +6,21 @@ import reportWebVitals from "./reportWebVitals";
 import AudioStreamSource from "./providers/AudioStreamSource";
 import UserMedia from "./providers/UserMedia";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <UserMedia mediaStreamConstraints={{ audio: true, video: false }}>
-      <AudioStreamSource>
-        <App />
-      </AudioStreamSource>
-    </UserMedia>
-  </React.StrictMode>,
-  document.getElementById("root")
-);
+const Root = () => {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const constraints = { audio: true, video: false };
+  return (
+    <React.StrictMode>
+      <UserMedia mediaStreamConstraints={constraints}>
+        <AudioStreamSource context={audioCtx}>
+          <App />
+        </AudioStreamSource>
+      </UserMedia>
+    </React.StrictMode>
+  );
+};
+
+ReactDOM.render(<Root />, document.getElementById("root"));
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
