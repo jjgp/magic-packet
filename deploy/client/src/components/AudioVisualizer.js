@@ -41,7 +41,7 @@ const useSourceAnalyser = () => {
   return analyser;
 };
 
-const AudioVisualizer = () => {
+const AudioVisualizer = (props) => {
   const analyser = useSourceAnalyser();
   const canvasRef = createRef();
 
@@ -87,7 +87,7 @@ const AudioVisualizer = () => {
     };
   }, [canvasRef, analyser]);
 
-  return analyser ? <canvas width="600" height="300" ref={canvasRef} /> : null;
+  return <canvas ref={canvasRef} {...props} />;
 };
 
 export default AudioVisualizer;
