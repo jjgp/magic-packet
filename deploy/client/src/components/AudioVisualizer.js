@@ -68,6 +68,8 @@ const AudioVisualizer = ({ displaySeconds, ...props }) => {
     const sliceWidth = width / (sampleRate * displaySeconds);
 
     const draw = () => {
+      animationFrame = requestAnimationFrame(draw);
+
       analyser.getByteTimeDomainData(data);
 
       let x = slicePosRef.current;
@@ -95,8 +97,6 @@ const AudioVisualizer = ({ displaySeconds, ...props }) => {
       context.lineTo(x, height / 2);
       context.stroke();
       slicePosRef.current = x;
-
-      animationFrame = requestAnimationFrame(draw);
     };
     draw();
 

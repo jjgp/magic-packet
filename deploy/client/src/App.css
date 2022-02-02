@@ -2,8 +2,16 @@
   text-align: center;
 }
 
+.App-btn {
+  background-color: #f73135;
+  border: none;
+  border-radius: 50%;
+  height: 44px;
+  width: 44px;
+}
+
 .App-header {
-  background-color: #2a3041;
+  background-color: #343434;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
