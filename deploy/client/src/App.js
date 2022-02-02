@@ -12,7 +12,11 @@ const App = () => {
         <button className="App-btn" onClick={toggleMic}>
           {stream ? "Close Microphone" : "Open Microphone"}
         </button>
-        <AudioVisualizer width={window.innerWidth} height={300} />
+        <AudioVisualizer
+          displaySeconds={3.0}
+          width={window.innerWidth}
+          height={300}
+        />
       </header>
     </div>
   );

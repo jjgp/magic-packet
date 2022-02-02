@@ -41,51 +41,66 @@ const useSourceAnalyser = () => {
   return analyser;
 };
 
-const AudioVisualizer = (props) => {
+const AudioVisualizer = ({ displaySeconds, ...props }) => {
   const analyser = useSourceAnalyser();
   const canvasRef = createRef();
+  const slicePosRef = createRef(0);
 
   useEffect(() => {
+    // TODO: clear rect on toggle of microphone
     if (!analyser) {
       return;
     }
 
-    let raf;
+    let animationFrame;
     const data = new Uint8Array(analyser.frequencyBinCount);
+    const sampleRate = analyser.context.sampleRate;
 
     const draw = () => {
-      raf = requestAnimationFrame(draw);
       analyser.getByteTimeDomainData(data);
       const canvas = canvasRef.current;
       if (canvas) {
-        const { height, width } = canvas;
         const context = canvas.getContext("2d");
-        let x = 0;
-        const sliceWidth = (width * 1.0) / data.length;
+        const { height, width } = canvas;
+        let x = slicePosRef.current;
+        const sliceWidth = width / (sampleRate * displaySeconds);
+        const dataWidth = sliceWidth * 2 * data.length;
 
         if (context) {
           context.lineWidth = 2;
           context.strokeStyle = "#fff";
-          context.clearRect(0, 0, width, height);
+          if (x + dataWidth < width) {
+            context.clearRect(x, 0, dataWidth, height);
+          } else {
+            context.clearRect(x, 0, width, height);
+            context.clearRect(0, 0, dataWidth - (width - x), height);
+          }
 
           context.beginPath();
-          context.moveTo(0, height / 2);
+          context.moveTo(x, height / 2);
           for (const item of data) {
             const y = (item / 255.0) * height;
             context.lineTo(x, y);
             x += sliceWidth;
+            if (x > width) {
+              context.lineTo(width, height / 2);
+              context.moveTo(0, height / 2);
+            }
+            x %= width;
           }
           context.lineTo(x, height / 2);
           context.stroke();
+          slicePosRef.current = x;
         }
       }
+      animationFrame = requestAnimationFrame(draw);
     };
     draw();
 
     return () => {
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(animationFrame);
     };
-  }, [canvasRef, analyser]);
+  }, [analyser, canvasRef, displaySeconds, slicePosRef]);
 
   return <canvas ref={canvasRef} {...props} />;
 };
