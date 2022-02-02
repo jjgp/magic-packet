@@ -29,7 +29,11 @@ const useSourceAnalyser = () => {
 
     if (analyser) {
       if (source) {
-        source.connect(analyser);
+        const downSampler = new AudioWorkletNode(
+          source.context,
+          "downSampleProcessor"
+        );
+        source.connect(downSampler).connect(analyser);
       } else {
         cleanup();
       }

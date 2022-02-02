@@ -5,11 +5,12 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import AudioStreamSource from "./providers/AudioStreamSource";
 import UserMedia from "./providers/UserMedia";
+import { useAudioContext } from "./hooks/audioContext";
 
 const Root = () => {
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const [isReady, audioCtx] = useAudioContext();
   const constraints = { audio: true, video: false };
-  return (
+  return isReady ? (
     <React.StrictMode>
       <UserMedia mediaStreamConstraints={constraints}>
         <AudioStreamSource context={audioCtx}>
@@ -17,7 +18,7 @@ const Root = () => {
         </AudioStreamSource>
       </UserMedia>
     </React.StrictMode>
-  );
+  ) : null;
 };
 
 ReactDOM.render(<Root />, document.getElementById("root"));
