@@ -34,7 +34,7 @@ const UserMedia = ({ children, mediaStreamConstraints }) => {
     setStream(null);
   }, [stream]);
 
-  useEffect(() => () => stopTracks(stream), [stream]);
+  useEffect(() => () => stopTracks(stream), [mediaStreamConstraints, stream]);
 
   return (
     <UserMediaContext.Provider

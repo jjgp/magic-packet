@@ -3,15 +3,15 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import AudioStream from "./providers/AudioStream";
+import AudioStreamSource from "./providers/AudioStreamSource";
 import UserMedia from "./providers/UserMedia";
 
 ReactDOM.render(
   <React.StrictMode>
     <UserMedia mediaStreamConstraints={{ audio: true, video: false }}>
-      <AudioStream>
+      <AudioStreamSource>
         <App />
-      </AudioStream>
+      </AudioStreamSource>
     </UserMedia>
   </React.StrictMode>,
   document.getElementById("root")

@@ -5,17 +5,16 @@
 */
 
 import React, { createRef, useEffect, useState } from "react";
-import { useAudioStream } from "../providers/AudioStream";
+import { useAudioStreamSource } from "../providers/AudioStreamSource";
 
 const useSourceAnalyser = () => {
   const [analyser, setAnalyser] = useState();
-  const { source } = useAudioStream();
+  const { source } = useAudioStreamSource();
 
   useEffect(() => {
     if (source) {
       const analyser = source.context.createAnalyser();
       analyser.smoothingTimeConstant = 1;
-      source.connect(analyser);
       setAnalyser(analyser);
     }
   }, [source]);
