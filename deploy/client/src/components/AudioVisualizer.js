@@ -8,7 +8,7 @@ import React, { createRef, useEffect } from "react";
 import { useAudioWorklet, useSourceAnalyser } from "../hooks";
 import { useAudioStreamSource } from "../providers/AudioStreamSource";
 
-const AudioVisualizer = ({ displaySeconds, ...props }) => {
+const AudioVisualizer = ({ displayWidthInSeconds, ...props }) => {
   const { source } = useAudioStreamSource();
   const downSampler = useAudioWorklet("downSampleProcessor", source);
   const analyser = useSourceAnalyser(downSampler);
@@ -34,7 +34,7 @@ const AudioVisualizer = ({ displaySeconds, ...props }) => {
     let animationFrame;
     const data = new Uint8Array(analyser.frequencyBinCount);
     const sampleRate = analyser.context.sampleRate;
-    const sliceWidth = width / (sampleRate * displaySeconds);
+    const sliceWidth = width / (sampleRate * displayWidthInSeconds);
 
     const draw = () => {
       animationFrame = requestAnimationFrame(draw);
@@ -72,7 +72,7 @@ const AudioVisualizer = ({ displaySeconds, ...props }) => {
     return () => {
       cancelAnimationFrame(animationFrame);
     };
-  }, [analyser, canvasRef, displaySeconds, slicePosRef]);
+  }, [analyser, canvasRef, displayWidthInSeconds, slicePosRef]);
 
   return <canvas ref={canvasRef} {...props} />;
 };

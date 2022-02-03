@@ -10,7 +10,7 @@ const App = () => {
     <div className="App">
       <header className="App-header">
         <AudioVisualizer
-          displaySeconds={3.0}
+          displayWidthInSeconds={3.0}
           width={window.innerWidth}
           height={300}
         />
