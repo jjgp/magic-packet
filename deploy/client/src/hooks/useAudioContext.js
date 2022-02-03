@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export const useAudioContext = ({ modules }) => {
+export const useAudioContext = (modules) => {
   const contextRef = useRef();
   const [isReady, setIsReady] = useState(false);
 

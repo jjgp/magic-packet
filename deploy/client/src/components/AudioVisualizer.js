@@ -5,10 +5,13 @@
 */
 
 import React, { createRef, useEffect } from "react";
-import { useSourceAnalyser } from "../hooks/useSourceAnalyzer";
+import { useAudioWorklet, useSourceAnalyser } from "../hooks";
+import { useAudioStreamSource } from "../providers/AudioStreamSource";
 
 const AudioVisualizer = ({ displaySeconds, ...props }) => {
-  const analyser = useSourceAnalyser();
+  const { source } = useAudioStreamSource();
+  const downSampler = useAudioWorklet("downSampleProcessor", source);
+  const analyser = useSourceAnalyser(downSampler);
   const canvasRef = createRef();
   const slicePosRef = createRef(0);
 

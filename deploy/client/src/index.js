@@ -5,12 +5,13 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import AudioStreamSource from "./providers/AudioStreamSource";
 import UserMedia from "./providers/UserMedia";
-import { useAudioContext } from "./hooks/useAudioContext";
+import { useAudioContext } from "./hooks";
 
 const Root = () => {
-  const modules = ["worklets/downSampleProcessor.js"];
-  const [isReady, audioCtx] = useAudioContext({ modules });
   const constraints = { audio: true, video: false };
+  const modules = ["worklets/downSampleProcessor.js"];
+  const [isReady, audioCtx] = useAudioContext(modules);
+
   return isReady ? (
     <React.StrictMode>
       <UserMedia mediaStreamConstraints={constraints}>
