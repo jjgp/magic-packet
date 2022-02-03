@@ -8,9 +8,9 @@ import React, { createRef, useEffect } from "react";
 import { useAudioWorklet, useSourceAnalyser } from "../hooks";
 import { useAudioStreamSource } from "../providers/AudioStreamSource";
 
-const AudioVisualizer = ({
+const KeywordVisualizer = ({
   displayWidthInSeconds,
-  fftSize = 256,
+  fftSize = 2048, // NOTE: in howl it's 256
   smoothingTimeConstant = 0.2,
   ...props
 }) => {
@@ -85,4 +85,4 @@ const AudioVisualizer = ({
   return <canvas ref={canvasRef} {...props} />;
 };
 
-export default AudioVisualizer;
+export default KeywordVisualizer;

@@ -6,7 +6,8 @@ export const useAudioWorklet = (name, destination) => {
   useEffect(() => {
     if (destination) {
       const node = new AudioWorkletNode(destination.context, name);
-      setWorklet(destination.connect(node));
+      const connected = destination.connect(node);
+      setWorklet(connected);
 
       return function disconnect() {
         node.disconnect();
