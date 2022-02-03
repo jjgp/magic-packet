@@ -4,46 +4,8 @@
     - https://github.com/onoya/react-mic-audio-visualizer/blob/master/src/AudioVisualizer.tsx
 */
 
-import React, { createRef, useEffect, useState } from "react";
-import { useAudioStreamSource } from "../providers/AudioStreamSource";
-
-const useSourceAnalyser = () => {
-  const [analyser, setAnalyser] = useState();
-  const { source } = useAudioStreamSource();
-
-  useEffect(() => {
-    if (source) {
-      const analyser = source.context.createAnalyser();
-      analyser.smoothingTimeConstant = 1;
-      setAnalyser(analyser);
-    }
-  }, [source]);
-
-  useEffect(() => {
-    const cleanup = () => {
-      if (analyser) {
-        analyser.disconnect();
-        setAnalyser(undefined);
-      }
-    };
-
-    if (analyser) {
-      if (source) {
-        const downSampler = new AudioWorkletNode(
-          source.context,
-          "downSampleProcessor"
-        );
-        source.connect(downSampler).connect(analyser);
-      } else {
-        cleanup();
-      }
-    }
-
-    return cleanup;
-  }, [analyser, source]);
-
-  return analyser;
-};
+import React, { createRef, useEffect } from "react";
+import { useSourceAnalyser } from "../hooks/useSourceAnalyzer";
 
 const AudioVisualizer = ({ displaySeconds, ...props }) => {
   const analyser = useSourceAnalyser();

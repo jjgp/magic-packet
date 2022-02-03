@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-export const useAudioContext = () => {
+export const useAudioContext = ({ modules }) => {
   const contextRef = useRef();
-  const nodeRef = useRef();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -10,23 +9,21 @@ export const useAudioContext = () => {
       window.webkitAudioContext)();
     const addModule = async () => {
       await contextRef.current.resume();
-      await contextRef.current.audioWorklet.addModule(
-        "worklets/downSampleProcessor.js"
-      );
-      nodeRef.current = new AudioWorkletNode(
-        contextRef.current,
-        "downSampleProcessor"
+      await Promise.all(
+        modules.map(async (module) => {
+          await contextRef.current.audioWorklet.addModule(module);
+        })
       );
       setIsReady(true);
     };
 
     addModule();
-  });
+  }, [modules]);
 
   useEffect(
     () => () => {
-      nodeRef.current.disconnect();
       contextRef.current.close();
+      contextRef.current = null;
     },
     []
   );
