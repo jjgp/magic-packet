@@ -8,10 +8,18 @@ import React, { createRef, useEffect } from "react";
 import { useAudioWorklet, useSourceAnalyser } from "../hooks";
 import { useAudioStreamSource } from "../providers/AudioStreamSource";
 
-const AudioVisualizer = ({ displayWidthInSeconds, ...props }) => {
+const AudioVisualizer = ({
+  displayWidthInSeconds,
+  fftSize = 256,
+  smoothingTimeConstant = 0.2,
+  ...props
+}) => {
   const { source } = useAudioStreamSource();
   const downSampler = useAudioWorklet("downSampleProcessor", source);
-  const analyser = useSourceAnalyser(downSampler);
+  const analyser = useSourceAnalyser(downSampler, {
+    fftSize,
+    smoothingTimeConstant,
+  });
   const canvasRef = createRef();
   const slicePosRef = createRef(0);
 
