@@ -3,12 +3,25 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import AudioStreamSource from "./providers/AudioStreamSource";
+import UserMedia from "./providers/UserMedia";
+import { useAudioContext } from "./hooks";
 
-const Root = () => (
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+const Root = () => {
+  const constraints = { audio: true, video: false };
+  const modules = ["worklets/downSampleProcessor.js"];
+  const [isReady, audioCtx] = useAudioContext(modules);
+
+  return isReady ? (
+    <React.StrictMode>
+      <UserMedia mediaStreamConstraints={constraints}>
+        <AudioStreamSource context={audioCtx}>
+          <App />
+        </AudioStreamSource>
+      </UserMedia>
+    </React.StrictMode>
+  ) : null;
+};
 
 ReactDOM.render(<Root />, document.getElementById("root"));
 
