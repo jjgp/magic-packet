@@ -1,44 +1,56 @@
 /*global sampleRate*/
 
-class DownSampleProcessor extends AudioWorkletProcessor {
-  static get parameterDescriptors() {
-    return [
-      { name: "sampleRate", automationRate: "k-rate", defaultValue: 16000 },
-    ];
+class DownsampleProcessor extends AudioWorkletProcessor {
+  constructor(...args) {
+    super(...args);
+    // move following to initialize method
+    this._frequencyBinCount = null;
+    this._initialized = false;
+    this._input = 0;
+    this._channel = 0;
+    this._sampleRate = null;
+    this.port.onmessage = this._onmessage;
   }
 
-  process(inputs, outputs, parameters) {
+  _linearInterpolate(input, outputLength) {
+    // linear downsampling adapted from: https://stackoverflow.com/a/27437245
+    const output = [];
+    output[0] = input[0]; // keep start value
+    // the distance between sampled values
+    const skipDistance = (input.length - 1) / (outputLength - 1);
+    for (let i = 1; i < outputLength - 1; ++i) {
+      const pos = i * skipDistance;
+      const i0 = Math.floor(pos);
+      const i1 = Math.ceil(pos);
+      // linearly interpolate input between indices i0 and i1
+      output[i] = input[i0] + (pos - i0) * (input[i1] - input[i0]);
+    }
+    output[outputLength - 1] = input[input.length - 1]; // keep end value
+    return output;
+  }
+
+  _onmessage = (event) => {
+    console.log(event);
+  };
+
+  process(inputs, outputs, _) {
+    if (this._initialized) {
+      const input = inputs[this._input][this._channel];
+      const outputLength = (this._sampleRate / sampleRate) * input.length;
+      const downsampled = this._linearInterpolate(inputs, outputLength);
+    }
+
+    // just pass inputs through
     for (let n = 0; n < inputs.length; ++n) {
       // n inputs
       for (let m = 0; m < inputs[n].length; ++m) {
         // m channels
-        const fitCount =
-          (parameters.sampleRate[0] / sampleRate) * inputs[n][m].length;
-        outputs[n][m] = this.downsample(inputs[n][m], fitCount);
+        outputs[n][m] = inputs[n][m];
       }
     }
+
     return true;
-  }
-
-  downsample(input, fitCount) {
-    // Adapted from: https://stackoverflow.com/a/27437245
-    const linearInterpolate = (before, after, atPoint) => {
-      return before + (after - before) * atPoint;
-    };
-
-    const sampled = [];
-    sampled[0] = input[0];
-    const springFactor = Number((input.length - 1) / (fitCount - 1));
-    for (let i = 1; i < fitCount - 1; ++i) {
-      const tmp = i * springFactor;
-      const before = Number(Math.floor(tmp)).toFixed();
-      const after = Number(Math.ceil(tmp)).toFixed();
-      const atPoint = tmp - before;
-      sampled[i] = linearInterpolate(input[before], input[after], atPoint);
-    }
-    sampled[fitCount - 1] = input[input.length - 1]; // for new allocation
-    return sampled;
   }
 }
 
-registerProcessor("downSampleProcessor", DownSampleProcessor);
+registerProcessor("downsampleProcessor", DownsampleProcessor);
