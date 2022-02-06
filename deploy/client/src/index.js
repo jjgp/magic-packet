@@ -8,10 +8,9 @@ import { useAudioContext } from "./hooks";
 
 const Root = () => {
   const constraints = { audio: true, video: false };
-  const modules = ["worklets/downsampleProcessor.js"];
-  const [isReady, audioCtx] = useAudioContext(modules);
+  const audioCtx = useAudioContext();
 
-  return isReady ? (
+  return (
     <React.StrictMode>
       <UserMedia mediaStreamConstraints={constraints}>
         <AudioStreamSource context={audioCtx}>
@@ -19,7 +18,7 @@ const Root = () => {
         </AudioStreamSource>
       </UserMedia>
     </React.StrictMode>
-  ) : null;
+  );
 };
 
 ReactDOM.render(<Root />, document.getElementById("root"));

@@ -9,7 +9,6 @@ export const useSourceAnalyser = (
   useEffect(() => {
     if (destination) {
       const node = destination.context.createAnalyser();
-      node.fftSize = fftSize;
       node.smoothingTimeConstant = smoothingTimeConstant;
 
       setAnalyser(destination.connect(node));

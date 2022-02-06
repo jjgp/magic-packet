@@ -5,22 +5,8 @@
 */
 
 import React, { createRef, useEffect } from "react";
-import { useAudioWorklet, useSourceAnalyser } from "../hooks";
+import { useSourceAnalyser } from "../hooks";
 import { useAudioStreamSource } from "../providers/AudioStreamSource";
-
-function averageInterpolate(input, outputLength) {
-  const output = [];
-  const accumulateRange = Math.floor(input.length / outputLength);
-  for (let i = 0; i < outputLength - 1; ++i) {
-    let acc = 0,
-      start = i * accumulateRange;
-    for (let j = start; j < start + accumulateRange; ++j) {
-      acc += input[j];
-    }
-    output[i] = acc / accumulateRange;
-  }
-  return output;
-}
 
 function linearInterpolate(input, outputLength) {
   // linear downsampling adapted from: https://stackoverflow.com/a/27437245
@@ -41,16 +27,11 @@ function linearInterpolate(input, outputLength) {
 
 const KeywordVisualizer = ({
   displayWidthInSeconds,
-  fftSize = 2048, // NOTE: in howl it's 256
-  smoothingTimeConstant = 0.2,
+  smoothingTimeConstant = 1,
   ...props
 }) => {
   const { source } = useAudioStreamSource();
-  const _ = useAudioWorklet("downsampleProcessor", source);
-  const analyser = useSourceAnalyser(source, {
-    fftSize,
-    smoothingTimeConstant,
-  });
+  const analyser = useSourceAnalyser(source, { smoothingTimeConstant });
   const canvasRef = createRef();
   const slicePosRef = createRef(0);
 

@@ -1,24 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import "webrtc-adapter"; // shims the AudioContext to support a wider range of browsers
+import { useEffect, useRef } from "react";
 
-export const useAudioContext = (modules) => {
-  const contextRef = useRef();
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    contextRef.current = new (window.AudioContext ||
-      window.webkitAudioContext)();
-    const addModule = async () => {
-      await contextRef.current.resume();
-      await Promise.all(
-        modules.map(async (module) => {
-          await contextRef.current.audioWorklet.addModule(module);
-        })
-      );
-      setIsReady(true);
-    };
-
-    addModule();
-  }, [modules]);
+export const useAudioContext = () => {
+  const contextRef = useRef(new window.AudioContext());
 
   useEffect(
     () => () => {
@@ -28,5 +12,5 @@ export const useAudioContext = (modules) => {
     []
   );
 
-  return [isReady, contextRef.current];
+  return contextRef.current;
 };
