@@ -9,11 +9,7 @@ const App = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <KeywordVisualizer
-          displayWidthInSeconds={3.0}
-          width={window.innerWidth}
-          height={300}
-        />
+        <KeywordVisualizer width={window.innerWidth} height={300} />
         <button className="App-btn" onClick={toggleStream} />
       </header>
     </div>

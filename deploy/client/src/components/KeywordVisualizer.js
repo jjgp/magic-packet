@@ -4,54 +4,51 @@
     - https://github.com/onoya/react-mic-audio-visualizer/blob/master/src/AudioVisualizer.tsx
 */
 
-import React, { createRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSourceAnalyser } from "../hooks";
 import { useAudioStreamSource } from "../providers/AudioStreamSource";
 
-function linearInterpolate(input, outputLength) {
-  // linear downsampling adapted from: https://stackoverflow.com/a/27437245
+function sampleMaxAmplitudes(input, outputLength) {
   const output = [];
-  output[0] = input[0]; // keep start value
-  // the distance between sampled values
-  const skipDistance = (input.length - 1) / (outputLength - 1);
-  for (let i = 1; i < outputLength - 1; ++i) {
-    const pos = i * skipDistance;
-    const i0 = Math.floor(pos);
-    const i1 = Math.ceil(pos);
-    // linearly interpolate input between indices i0 and i1
-    output[i] = input[i0] + (pos - i0) * (input[i1] - input[i0]);
+  const sampleWidth = Math.floor(input.length / outputLength);
+  for (let i = 0; i < outputLength - 1; ++i) {
+    const start = i * sampleWidth;
+    let max = -Infinity,
+      min = Infinity;
+    for (let j = i * sampleWidth; j < start + sampleWidth; ++j) {
+      max = Math.max(max, input[j]);
+      min = Math.min(min, input[j]);
+    }
+    output[i] = max - min;
   }
-  output[outputLength - 1] = input[input.length - 1]; // keep end value
   return output;
 }
 
 const KeywordVisualizer = ({
-  displayWidthInSeconds,
+  displayWidthInSeconds = 3,
   smoothingTimeConstant = 1,
   ...props
 }) => {
   const { source } = useAudioStreamSource();
   const analyser = useSourceAnalyser(source, { smoothingTimeConstant });
-  const canvasRef = createRef();
-  const slicePosRef = createRef(0);
+  const canvasRef = useRef();
+  const drawXRef = useRef(0);
 
   useEffect(() => {
-    if (!analyser) {
+    if (!analyser || !canvasRef.current) {
       return;
     }
 
     const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
     const { height, width } = canvas;
 
     const context = canvas.getContext("2d");
     context.lineWidth = 2;
     context.strokeStyle = "#fff";
 
-    let animationFrame;
-    const analyzed = new Uint8Array(analyser.frequencyBinCount);
+    const midHeight = height / 2;
+
+    const timeData = new Uint8Array(analyser.fftSize);
     const sampleRate = analyser.context.sampleRate;
     const sliceWidth = 2;
     const sampleLength =
@@ -59,14 +56,14 @@ const KeywordVisualizer = ({
       (sampleRate * displayWidthInSeconds);
 
     const draw = () => {
-      animationFrame = requestAnimationFrame(draw);
+      analyser.getByteTimeDomainData(timeData);
+      const amplitudes = sampleMaxAmplitudes(
+        timeData.slice(),
+        Math.floor(sampleLength / 2)
+      );
 
-      analyser.getByteTimeDomainData(analyzed);
-      let data = analyzed.slice();
-      data = linearInterpolate(data, Math.floor(sampleLength / 2));
-
-      let x = slicePosRef.current;
-      const drawWidth = data.length * sliceWidth + 2 * sliceWidth;
+      let x = drawXRef.current;
+      const drawWidth = amplitudes.length * sliceWidth + 2 * sliceWidth;
 
       if (x + drawWidth < width) {
         context.clearRect(Math.floor(x), 0, Math.ceil(drawWidth), height);
@@ -76,27 +73,32 @@ const KeywordVisualizer = ({
       }
 
       context.beginPath();
-      context.moveTo(x, height / 2);
-      for (const item of data) {
+      for (const item of amplitudes) {
         const y = (item / 255.0) * height;
-        context.lineTo(x, y);
+        context.moveTo(x, midHeight - y / 2);
+        context.lineTo(x, midHeight + y / 2);
         x += sliceWidth;
         if (x > width - 1) {
-          context.lineTo(width, height / 2);
-          context.moveTo(0, height / 2);
+          context.moveTo(0, midHeight);
         }
         x %= width;
       }
-      context.lineTo(x, height / 2);
+      context.lineTo(x, midHeight);
       context.stroke();
-      slicePosRef.current = x;
+      drawXRef.current = x;
     };
-    draw();
+
+    let animationFrame;
+    const render = (timestamp) => {
+      draw();
+      animationFrame = requestAnimationFrame(render);
+    };
+    animationFrame = requestAnimationFrame(render);
 
     return () => {
       cancelAnimationFrame(animationFrame);
     };
-  }, [analyser, canvasRef, displayWidthInSeconds, slicePosRef]);
+  }, [analyser, canvasRef, displayWidthInSeconds, drawXRef]);
 
   return <canvas ref={canvasRef} {...props} />;
 };
