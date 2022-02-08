@@ -3,15 +3,17 @@
 }
 
 .App-btn {
-  background-color: #f73135;
-  border: none;
-  border-radius: 50%;
-  height: 44px;
-  width: 44px;
+  margin-right: 12px;
+}
+
+.App-btns {
+  cursor: pointer;
+  display: inline-block;
+  margin: 0 auto;
 }
 
 .App-header {
-  background-color: #343434;
+  background-color: #202124;
   min-height: 100vh;
   display: flex;
   flex-direction: column;

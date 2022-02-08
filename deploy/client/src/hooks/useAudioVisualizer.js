@@ -4,9 +4,8 @@
     - https://github.com/onoya/react-mic-audio-visualizer/blob/master/src/AudioVisualizer.tsx
 */
 
-import React, { useEffect, useRef } from "react";
-import { useSourceAnalyser } from "../hooks";
-import { useAudioStreamSource } from "../providers/AudioStreamSource";
+import { useEffect, useRef } from "react";
+import { useSourceAnalyser } from ".";
 
 function resampleMaxAmplitudes(input, outputLength) {
   const output = [];
@@ -24,17 +23,16 @@ function resampleMaxAmplitudes(input, outputLength) {
   return output;
 }
 
-const AudioVisualizer = ({
+export const useAudioVisualizer = (
+  source,
+  canvasRef,
   amplitudeSpacing = 3,
   amplitudeWidth = 2,
   displaySeconds = 3,
-  strokeStyle = "#fff",
-  ...props
-}) => {
-  const { source } = useAudioStreamSource();
+  strokeStyle = "#fff"
+) => {
   const analyser = useSourceAnalyser(source);
   const amplitudesRef = useRef([]);
-  const canvasRef = useRef();
 
   useEffect(() => {
     if (analyser) {
@@ -103,8 +101,6 @@ const AudioVisualizer = ({
       cancelAnimationFrame(animationFrame);
     };
   }, [amplitudeSpacing, amplitudeWidth, canvasRef, strokeStyle]);
-
-  return <canvas ref={canvasRef} {...props} />;
 };
 
-export default AudioVisualizer;
+export default useAudioVisualizer;
