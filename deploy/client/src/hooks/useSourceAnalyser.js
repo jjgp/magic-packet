@@ -16,7 +16,7 @@ export const useSourceAnalyser = (
       node.smoothingTimeConstant = smoothingTimeConstant;
 
       setAnalyser(destination.connect(node));
-      return function disconnect() {
+      return function () {
         node.disconnect();
       };
     } else {

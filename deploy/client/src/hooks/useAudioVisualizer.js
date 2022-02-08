@@ -97,7 +97,7 @@ export const useAudioVisualizer = (
     };
     render();
 
-    return () => {
+    return function () {
       cancelAnimationFrame(animationFrame);
     };
   }, [amplitudeSpacing, amplitudeWidth, canvasRef, strokeStyle]);

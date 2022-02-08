@@ -1,16 +1,22 @@
 import { useRef } from "react";
 import "./App.css";
-import { useAudioVisualizer } from "./hooks";
+import { useAudioVisualizer, useMediaRecorder } from "./hooks";
 import { useAudioStreamSource, useUserMedia } from "./providers";
 
 const App = () => {
   const canvasRef = useRef();
-  const { stream, start, stop } = useUserMedia();
+  const { stream, start, stop: stopStream } = useUserMedia();
+  const { blob, stop: stopRecorder } = useMediaRecorder(stream);
   const { source } = useAudioStreamSource();
-
   useAudioVisualizer(source, canvasRef);
 
+  const stop = () => {
+    stopRecorder();
+    stopStream();
+  };
+
   const toggleStream = () => (stream ? stop() : start());
+  const canSubmit = !stream && blob && blob.size;
 
   return (
     <div className="App">
@@ -20,8 +26,8 @@ const App = () => {
           <button className="App-btn" onClick={toggleStream}>
             {stream ? "Stop Record" : "Record"}
           </button>
-          <button className="App-btn" onClick={toggleStream}>
-            {stream ? "Submit" : "Submit"}
+          <button className="App-btn" disabled={!canSubmit}>
+            {"Submit"}
           </button>
         </div>
       </header>
