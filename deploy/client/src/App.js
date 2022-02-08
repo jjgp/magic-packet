@@ -1,5 +1,5 @@
 import "./App.css";
-import KeywordVisualizer from "./components/KeywordVisualizer";
+import AudioVisualizer from "./components/AudioVisualizer";
 import { useUserMedia } from "./providers/UserMedia";
 
 const App = () => {
@@ -9,7 +9,7 @@ const App = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <KeywordVisualizer width={window.innerWidth} height={300} />
+        <AudioVisualizer width={window.innerWidth} height={300} />
         <button className="App-btn" onClick={toggleStream} />
       </header>
     </div>

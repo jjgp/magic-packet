@@ -2,13 +2,17 @@ import { useEffect, useState } from "react";
 
 export const useSourceAnalyser = (
   destination,
-  { fftSize, smoothingTimeConstant }
+  { fftSize, smoothingTimeConstant } = {
+    fftSize: 2048,
+    smoothingTimeConstant: 1,
+  }
 ) => {
   const [analyser, setAnalyser] = useState();
 
   useEffect(() => {
     if (destination) {
       const node = destination.context.createAnalyser();
+      node.fftSize = fftSize;
       node.smoothingTimeConstant = smoothingTimeConstant;
 
       setAnalyser(destination.connect(node));

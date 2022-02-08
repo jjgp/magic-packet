@@ -3,14 +3,6 @@ import { useEffect, useRef } from "react";
 
 export const useAudioContext = () => {
   const contextRef = useRef(new window.AudioContext());
-
-  useEffect(
-    () => () => {
-      contextRef.current.close();
-      contextRef.current = null;
-    },
-    []
-  );
-
+  useEffect(() => () => contextRef.current.close(), []);
   return contextRef.current;
 };
