@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import "./App.css";
 import { useAudioVisualizer, useMediaRecorder } from "./hooks";
 import { useAudioStreamSource, useUserMedia } from "./providers";
@@ -17,6 +17,10 @@ const App = () => {
 
   const toggleStream = () => (stream ? stop() : start());
   const canSubmit = !stream && blob && blob.size;
+
+  useEffect(() => {
+    (async () => console.log(await fetch("/api")))();
+  });
 
   return (
     <div className="App">
