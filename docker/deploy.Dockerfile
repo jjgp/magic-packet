@@ -15,7 +15,7 @@ FROM base AS client-builder
 
 COPY client .
 
-RUN npm i && npm run build
+RUN npm i && PUBLIC_URL="http://localhost:5000/" npm run build
 
 FROM base AS deploy
 
@@ -30,6 +30,8 @@ COPY app.py requirements.txt ./
 ENV PATH="/usr/deploy/venv/bin:$PATH"
 
 RUN python -m venv venv \
-    && pip install -r requirements.txt .
+    && pip install -r requirements.txt
+
+EXPOSE 5000
 
 CMD ["python", "app.py"]
