@@ -10,3 +10,26 @@ RUN apt-get install -y python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+
+FROM base AS client-builder
+
+COPY client .
+
+RUN npm i && npm run build
+
+FROM base AS deploy
+
+WORKDIR /usr/deploy
+
+COPY --from=client-builder build client/build
+
+COPY api api
+
+COPY app.py requirements.txt ./
+
+ENV PATH="/usr/deploy/venv/bin:$PATH"
+
+RUN python -m venv venv \
+    && pip install -r requirements.txt .
+
+CMD ["python", "app.py"]

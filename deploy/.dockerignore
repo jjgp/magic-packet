@@ -1,3 +1,4 @@
 .devcontainer
-client/*
-!client/build
+build
+node_modules
+venv
