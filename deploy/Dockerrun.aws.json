@@ -1,0 +1,12 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "jjgp/magic-packet:deploy"
+  },
+  "Ports": [
+    {
+      "ContainerPort": 5000,
+      "HostPort": 5000
+    }
+  ]
+}
