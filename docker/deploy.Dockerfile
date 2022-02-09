@@ -13,13 +13,17 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
 
 FROM base AS client-builder
 
-ARG PORT=4999
+ARG PORT=5000
 
 COPY client .
 
-RUN npm i && PUBLIC_URL="http://localhost:${PORT}/" npm run build
+RUN npm i && PUBLIC_URL="http://localhost:$PORT" npm run build
 
 FROM base AS deploy
+
+ENV PATH="/usr/deploy/venv/bin:$PATH"
+
+ENV REACT_APP_API_PROXY="http://localhost:$PORT/api"
 
 WORKDIR /usr/deploy
 
@@ -29,9 +33,7 @@ COPY api api
 
 COPY app.py requirements.txt ./
 
-ENV PATH="/usr/deploy/venv/bin:$PATH"
-
 RUN python -m venv venv \
-    && pip install -r requirements.txt
+    && pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "app.py"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "$PORT"]

@@ -1,5 +1,9 @@
 {
   "image": "jjgp/magic-packet:deploy-base",
   "forwardPorts": [3000, 5000],
+  "remoteEnv": {
+    "PUBLIC_URL": "http://localhost:5000",
+    "REACT_APP_API_PROXY": "http://localhost:5000/api"
+  },
   "runArgs": ["--platform", "linux/amd64"]
 }
