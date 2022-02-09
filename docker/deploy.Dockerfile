@@ -13,9 +13,11 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
 
 FROM base AS client-builder
 
+ARG PORT=4999
+
 COPY client .
 
-RUN npm i && PUBLIC_URL="http://localhost:5000/" npm run build
+RUN npm i && PUBLIC_URL="http://localhost:${PORT}/" npm run build
 
 FROM base AS deploy
 
@@ -31,7 +33,5 @@ ENV PATH="/usr/deploy/venv/bin:$PATH"
 
 RUN python -m venv venv \
     && pip install -r requirements.txt
-
-EXPOSE 5000
 
 CMD ["python", "app.py"]
