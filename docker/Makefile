@@ -16,3 +16,12 @@ devel.Dockerfile: %.Dockerfile:
 		-t $(repository):$(sha)-$* \
 		-f $@ \
 		$(abspath ..)/environment/linux
+
+.PHONY: deploy.Dockerfile
+deploy.Dockerfile: TARGET :=
+deploy.Dockerfile: %.Dockerfile:
+	docker build --platform $(PLATFORM) \
+		$(if $(TARGET),--target $(TARGET)) \
+		-t $(repository):$(sha)-$*$(if $(TARGET),-$(TARGET)) \
+		-f $@ \
+		$(abspath ..)/deploy

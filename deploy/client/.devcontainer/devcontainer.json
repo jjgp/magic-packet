@@ -1,4 +1,0 @@
-{
-  "image": "node:16",
-  "forwardPorts": [3000]
-}
