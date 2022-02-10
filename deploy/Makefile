@@ -1,4 +1,5 @@
 ENVFILE  ?= .env
+REGION   ?= us-east-1
 
 include $(ENVFILE)
 envvars   = $(shell sed 's/=.*//' $(ENVFILE))
@@ -6,6 +7,8 @@ export $(envvars)
 
 app_name  = magic-packet
 comma     = ,
+eb        = cd ./eb && eb
+eb_env    = magic-packet-env
 space     = $(subst ,, )
 envpairs  = $(subst $(space),$(comma),$(foreach v,$(envvars),$(v)="$($(v))"))
 uvicorn   = . venv/bin/activate && uvicorn
@@ -32,13 +35,29 @@ client_init:
 client_start:
 	@npm --prefix client run start
 
+.PHONY: eb_create
+eb_create:
+	@$(eb) create $(eb_env) --envvars $(envpairs)
+
+.PHONY: eb_open
+eb_open:
+	@$(eb) open
+
 .PHONY: eb_init
 eb_init:
-	@eb init -p docker $(app_name)
+	@$(eb) init -r $(REGION) -p docker $(app_name)
 
 .PHONY: eb_local_run
 eb_local_run:
-	@eb local run --envvars $(envpairs)
+	@$(eb) local run --envvars $(envpairs)
+
+.PHONY: eb_local_open
+eb_local_open:
+	@$(eb) local open
+
+.PHONY: eb_terminate
+eb_terminate:
+	@$(eb) terminate --all
 
 .PHONY: uvicorn
 uvicorn_api:
