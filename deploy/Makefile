@@ -1,4 +1,5 @@
 ENVFILE  ?= .env
+PLATFORM ?= docker-20.10.7-ce
 REGION   ?= us-east-1
 
 include $(ENVFILE)
@@ -45,7 +46,7 @@ eb_open:
 
 .PHONY: eb_init
 eb_init:
-	@$(eb) init -r $(REGION) -p docker $(app_name)
+	@$(eb) init -r $(REGION) -p $(PLATFORM) $(app_name)
 
 .PHONY: eb_local_run
 eb_local_run:
