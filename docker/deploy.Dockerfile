@@ -17,7 +17,7 @@ ARG PUBLIC_URL=/client
 
 COPY client .
 
-RUN make client_init && make PUBLIC_URL=$PUBLIC_URL client_build
+RUN make client_start && make PUBLIC_URL=$PUBLIC_URL client_build
 
 FROM base AS deploy
 
