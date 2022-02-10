@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import "./App.css";
 import { useAudioVisualizer, useMediaRecorder } from "./hooks";
 import { useAudioStreamSource, useUserMedia } from "./providers";
@@ -24,6 +24,8 @@ const App = () => {
       be downsampled.
       - https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/sampleRate
       - https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/audioBitsPerSecond
+
+      TODO: this closure should be debounced so that it doesn't spam the API...
     */
     console.log(await fetch("/api"));
   };
