@@ -25,7 +25,7 @@ ARG PORT=5000
 
 ENV PATH="/usr/deploy/venv/bin:$PATH"
 
-ENV REACT_APP_API_PROXY="http://localhost:$PORT/api"
+ENV REACT_APP_API_PROXY="http://localhost:$PORT"
 
 ENV UVICORN_PORT=$PORT
 

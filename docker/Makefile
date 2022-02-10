@@ -18,7 +18,7 @@ devel.Dockerfile: %.Dockerfile:
 		$(abspath ..)/environment/linux
 
 .PHONY: deploy.Dockerfile
-deploy.Dockerfile: TARGET :=
+deploy.Dockerfile: TARGET ?=
 deploy.Dockerfile: %.Dockerfile:
 	docker build --platform $(PLATFORM) \
 		$(if $(TARGET),--target $(TARGET)) \

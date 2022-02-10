@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 
 app.mount("/client", StaticFiles(directory="client/build", html=True), name="client")
-app.mount("/api", api.app)
+app.include_router(api.router)
 
 
 @app.get("/")

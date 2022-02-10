@@ -19,14 +19,14 @@ magicpkt            = $(python) magic_packet.cli.magicpkt
 help:
 	@echo "make aligned:\n    mfa align audio clips\n"
 	@echo "make $(corpus_archive):\n    download the corpus archive\n"
-	@echo "make $(corpus_db):\n    create the corpus databse\n"
+	@echo "make $(corpus_db):\n    create the corpus database\n"
 	@echo "make extract:\n    extract clips of target vocab ($(VOCAB)) and OOV\n"
 
 $(acoustic_model):
 	mfa model download acoustic $(MFA_ACOUSTIC_MODEL)
 
 .PHONY: aligned
-aligned: N_JOBS := 8
+aligned: N_JOBS ?= 8
 aligned:
 	yes n | mfa align -j $(N_JOBS) \
 		$(clips_dir) \
@@ -52,7 +52,7 @@ $(corpus_db): $(corpus_dir)
 		-s train -s dev -s test
 
 .PHONY: extract
-extract: OOV_PCT := 5
+extract: OOV_PCT ?= 5
 extract:
 	$(magicpkt) common-voice extract \
 		./$(corpus_archive) \

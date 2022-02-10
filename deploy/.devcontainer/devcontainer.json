@@ -1,10 +1,5 @@
 {
   "image": "jjgp/magic-packet:deploy-base",
   "forwardPorts": [3000, 5000],
-  "remoteEnv": {
-    // TODO: should these be set here or in an .env file?
-    "REACT_APP_API_PROXY": "http://localhost:5000/api",
-    "UVICORN_PORT": "5000"
-  },
   "runArgs": ["--platform", "linux/amd64"]
 }
