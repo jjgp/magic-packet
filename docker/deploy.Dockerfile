@@ -17,7 +17,7 @@ ARG PUBLIC_URL=/client
 
 COPY client .
 
-RUN make client_start && make PUBLIC_URL=$PUBLIC_URL client_build
+RUN npm i && PUBLIC_URL=$PUBLIC_URL npm run build
 
 FROM base AS deploy
 
@@ -34,4 +34,4 @@ COPY app.py requirements.txt ./
 RUN python -m venv venv \
     && pip install --no-cache-dir -r requirements.txt
 
-CMD ["make", "uvicorn_app"]
+CMD ["uvicorn", "app:app"]

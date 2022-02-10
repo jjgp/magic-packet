@@ -1,9 +1,14 @@
-ENVFILE ?= .env
+ENVFILE  ?= .env
 
 include $(ENVFILE)
-export $(shell sed 's/=.*//' $(ENVFILE))
+envvars   = $(shell sed 's/=.*//' $(ENVFILE))
+export $(envvars)
 
-uvicorn  = . venv/bin/activate && uvicorn
+app_name  = magic-packet
+comma     = ,
+space     = $(subst ,, )
+envpairs  = $(subst $(space),$(comma),$(foreach v,$(envvars),$(v)="$($(v))"))
+uvicorn   = . venv/bin/activate && uvicorn
 
 .PHONY: help
 help:
@@ -15,8 +20,9 @@ help:
 	@echo "make run_devel:\n    start client and api server (make -j2 run_devel)\n"
 
 .PHONY: client_build
+client_build: PUBLIC_URL ?= /
 client_build:
-	@npm --prefix client run build
+	@PUBLIC_URL=$(PUBLIC_URL) npm --prefix client run build
 
 .PHONY: client_init
 client_init:
@@ -25,6 +31,14 @@ client_init:
 .PHONY: client_start
 client_start:
 	@npm --prefix client run start
+
+.PHONY: eb_init
+eb_init:
+	@eb init -p docker $(app_name)
+
+.PHONY: eb_local_run
+eb_local_run:
+	@eb local run --envvars $(envpairs)
 
 .PHONY: uvicorn
 uvicorn_api:
