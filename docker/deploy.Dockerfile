@@ -17,17 +17,11 @@ ARG PUBLIC_URL=/client
 
 COPY client .
 
-RUN npm i && PUBLIC_URL=$PUBLIC_URL npm run build
+RUN make client_init && make PUBLIC_URL=$PUBLIC_URL client_build
 
 FROM base AS deploy
 
-ARG PORT=5000
-
 ENV PATH="/usr/deploy/venv/bin:$PATH"
-
-ENV REACT_APP_API_PROXY="http://localhost:$PORT"
-
-ENV UVICORN_PORT=$PORT
 
 WORKDIR /usr/deploy
 
@@ -40,4 +34,4 @@ COPY app.py requirements.txt ./
 RUN python -m venv venv \
     && pip install --no-cache-dir -r requirements.txt
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0"]
+CMD ["make", "uvicorn_app"]

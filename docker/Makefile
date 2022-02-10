@@ -3,6 +3,12 @@ PLATFORM  ?= linux/amd64
 repository = jjgp/magic-packet
 sha        = $(shell git rev-parse --short HEAD)
 
+.PHONY: help
+help:
+	@echo "make Dockerfile:\n    magicpkt image supported by nvidia runtime\n"
+	@echo "make devel.Dockerfile:\n    magicpkt development image\n"
+	@echo "make deploy.Dockerfile:\n    deploy image\n"
+
 .PHONY: Dockerfile
 Dockerfile:
 	docker build --platform $(PLATFORM) \
