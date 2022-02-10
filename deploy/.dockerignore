@@ -1,0 +1,5 @@
+.devcontainer
+build
+eb
+node_modules
+venv

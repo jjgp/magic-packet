@@ -1,0 +1,5 @@
+{
+  "image": "jjgp/magic-packet:deploy-base",
+  "forwardPorts": [3000, 5000],
+  "runArgs": ["--platform", "linux/amd64"]
+}
