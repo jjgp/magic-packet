@@ -28,7 +28,7 @@ $(acoustic_model):
 .PHONY: aligned
 aligned: N_JOBS ?= 8
 aligned:
-	yes n | mfa align -j $(N_JOBS) \
+		$(magicpkt) common-voice align -j $(N_JOBS) \
 		$(clips_dir) \
 		lexicon.txt \
 		english \
