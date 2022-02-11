@@ -11,7 +11,7 @@ corpus_dir          = cv-corpus-$(COMMON_VOICE_VERS)/$(COMMON_VOICE_LANG)
 splits_db           = $(corpus_dir)/splits.db
 aligned_dir         = $(corpus_dir)/aligned
 clips_dir           = $(corpus_dir)/clips
-pythonpath          = $(abspath ..)
+pythonpath          = $(abspath ../..)
 python              = PYTHONPATH=$(pythonpath) python -m
 magicpkt            = $(python) magic_packet.cli.magicpkt
 
