@@ -1,6 +1,7 @@
 FROM nvidia/cuda:11.2.0-cudnn8-runtime-ubuntu20.04
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    build-essential \
     ffmpeg \
     libavcodec-extra \
     software-properties-common \
