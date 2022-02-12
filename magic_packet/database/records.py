@@ -2,9 +2,6 @@ from typing import get_type_hints
 
 _DECORATED_ATTR = "_sql"
 
-# TODO: currenly the where clauses do not use the qmark or named styles as described:
-# https://docs.python.org/3/library/sqlite3.html
-
 
 class SQL:
     def joinattr(self, a, b, join_type, select, on):

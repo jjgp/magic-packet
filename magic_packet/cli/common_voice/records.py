@@ -35,6 +35,8 @@ class Words(NamedTuple):
 
 
 @sql_update(Words)
-class Alignments(NamedTuple):
+class Alignment(NamedTuple):
+    clip_id: int
+    loc: int
     begin: float
     end: float

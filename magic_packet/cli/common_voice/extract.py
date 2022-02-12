@@ -53,44 +53,50 @@ def extract_clips(clips, archive, output_directory):
 
 
 def query_clips(database, between=None, vocab=None, oov_pct=None):
-    with DatabaseManager(database) as db:
+    with DatabaseManager(database) as db_manager:
         if vocab:
-            vocab_clips = db.join(
-                _distinct_clips(),
-                where=" or ".join("word=?" for _ in vocab),
-                parameters=vocab,
-            )
-
-            oov_clips = (
-                db.join(
-                    _oov_clips(vocab),
-                    where=(
-                        "clip_id is null"
-                        " and abs(cast(random() as real)) / 9223372036854775808 < ?"
-                    ),
-                    parameters=(oov_pct / 100,),
-                )
-                if oov_pct
-                else None
-            )
+            return _query_vocab_and_oov_clips(db_manager, vocab, oov_pct)
         else:
             where = "id between ? and ?" if between else None
-            vocab_clips, oov_clips = db.select(Clips, where, parameters=between), None
-        return (vocab_clips, oov_clips)
+            return db_manager.select(Clips, where, parameters=between), None
 
 
-def _distinct_clips():
-    return sql_join(Clips, Words, join_type="inner", on="clip_id = id", distinct=True)(
-        AbbrClips
+def _query_vocab_and_oov_clips(db_manager, vocab, oov_pct):
+    distinct_clips = sql_join(
+        Clips, Words, join_type="inner", on="clip_id = id", distinct=True
+    )(AbbrClips)
+
+    vocab_clips = db_manager.join(
+        distinct_clips,
+        where=" or ".join("word = ?" for _ in vocab),
+        parameters=vocab,
     )
 
+    if oov_pct:
+        where_words_qmark = " or ".join("word = ?" for _ in vocab)
 
-def _oov_clips(vocab):
-    words_equal = " or ".join(f"word = '{word}'" for word in vocab)
-    return sql_join(
-        Clips,
-        f"(select clip_id from words where {words_equal})",
-        join_type="left",
-        on="clip_id = id",
-        distinct=True,
-    )(AbbrClips)
+        left_joined_clips = sql_join(
+            Clips,
+            f"(select clip_id from words where {where_words_qmark})",
+            join_type="left",
+            on="clip_id = id",
+            distinct=True,
+        )(AbbrClips)
+
+        where_oov_sampled_qmark = (
+            "clip_id is null"
+            " and abs(cast(random() as real)) / 9223372036854775808 < ?"
+        )
+
+        # where_words_qmark + where_oov_sampled_qmark
+        parameters = tuple(vocab) + (oov_pct / 100,)
+
+        oov_clips = db_manager.join(
+            left_joined_clips,
+            where=where_oov_sampled_qmark,
+            parameters=parameters,
+        )
+    else:
+        oov_clips = None
+
+    return vocab_clips, oov_clips

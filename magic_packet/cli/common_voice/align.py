@@ -8,10 +8,13 @@ from montreal_forced_aligner.config import get_temporary_directory
 from montreal_forced_aligner.utils import check_third_party
 from tqdm import tqdm
 
-# from .records import Alignments, Words
+from magic_packet.database import DatabaseManager
+
+from .records import Alignment
 
 
 @click.command()
+@click.argument("database", type=click.Path(exists=True))
 @click.argument("corpus_directory")
 @click.argument("dictionary_path")
 @click.argument("acoustic_model_path")
@@ -40,7 +43,7 @@ def align(**kwargs):
 
     try:
         aligner.align()
-        _export_files_to_database(aligner)
+        _export_files_to_database(aligner.files)
         aligner.export_files(args.output_directory)
     except Exception:
         aligner.dirty = True
@@ -60,18 +63,23 @@ def _mfa_setup():
     init()
 
 
-def _export_files_to_database(aligner):
-    total = len(aligner.files)
-    for file in tqdm(
-        aligner.files, desc="Inserting alignment files into database", total=total
-    ):
-        clips = file.aligned_data["clips"]
+def _export_files_to_database(files, database):
+    total = len(files)
+    with DatabaseManager(database) as db_manager:
+        for file in tqdm(
+            files, desc="Inserting alignment files into database", total=total
+        ):
+            clips = file.aligned_data["clips"]
 
-        for interval in clips["words"]:
-            pass
+            for loc, interval in enumerate(clips["words"]):
+                alignment = Alignment(interval.begin, interval.end)
+                clip_id = interval.utterance.split("-")[-1]
+                db_manager.update(
+                    alignment, where="clip_id = ? and loc = ?", parameters=(clip_id.loc)
+                )
 
-        for interval in clips["phones"]:
-            pass
+            for interval in clips["phones"]:
+                pass
 
 
 def _pretrained_aligner(args):
