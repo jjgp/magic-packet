@@ -41,6 +41,6 @@ class DatabaseManager:
     def update(self, record, where):
         self._cur.execute(record._sql.update(where), record)
 
-    def _query(self, record, fn, where):
-        self._cur.execute(fn(where))
+    def _query(self, record, fn, where, *parameters, **kwargs):
+        self._cur.execute(fn(where), parameters or kwargs)
         return map(record._make, self._cur.fetchall())

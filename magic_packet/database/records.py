@@ -48,7 +48,7 @@ class SQL:
         setattr(self, insert.__name__, insert)
         setattr(self, select.__name__, select)
 
-        self.updateattr(self, name, columns)
+        self.updateattr(name, columns)
 
     def updateattr(self, name, columns):
         set_sql = ", ".join(f"{column}=:{column}" for column in columns)
