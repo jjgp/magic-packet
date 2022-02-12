@@ -18,6 +18,15 @@ class DatabaseManager:
     def commit(self):
         self._conn.commit()
 
+    def execute(self, sql, parameters):
+        self._cur.execute(sql, parameters)
+
+    def executemany(self, sql, seq_of_parameters):
+        self._cur.executemany(sql, seq_of_parameters)
+
+    def fetchall(self):
+        return self._cur.fetchall()
+
     def create(self, *records):
         for record in records:
             self._cur.execute(record._sql.create())

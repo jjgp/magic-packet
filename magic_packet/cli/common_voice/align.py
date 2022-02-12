@@ -75,7 +75,9 @@ def _export_files_to_database(files, database):
                 alignment = Alignment(interval.begin, interval.end)
                 clip_id = interval.utterance.split("-")[-1]
                 db_manager.update(
-                    alignment, where="clip_id = ? and loc = ?", parameters=(clip_id.loc)
+                    alignment,
+                    where="clip_id = :clip_id and loc = :loc",
+                    parameters=(clip_id, loc),
                 )
 
             for interval in clips["phones"]:

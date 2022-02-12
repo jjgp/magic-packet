@@ -11,7 +11,7 @@ from tqdm import tqdm
 from magic_packet.cli.utils.lazy_module import tensorflow as tf
 from magic_packet.database import DatabaseManager
 
-from .records import Clips, Phones, Words
+from . import sql
 
 _EMPTY_SENTENCE_TOKEN = "[empty]"
 
@@ -25,8 +25,10 @@ def createdb(archive, database, split):
         archive, "rb"
     ) as gfile, tarfile.open(mode="r:*", fileobj=gfile) as tar:
         if os.path.exists(database):
-            db_manager.drop(Clips, Phones, Words)
-        db_manager.create(Clips, Phones, Words)
+            db_manager.execute(sql.drop_all_tables)
+        db_manager.create(sql.create_table_clips)
+        db_manager.create(sql.create_table_phones)
+        db_manager.create(sql.create_table_words)
 
         n_splits = len(split)
         while n_splits:
@@ -59,9 +61,9 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
 
         clip_id = match.group(1)
         words = [
-            Words(clip_id, loc, word.strip(string.punctuation))
+            (clip_id, loc, word.strip(string.punctuation), None, None)
             for loc, word in enumerate(sentence.split())
-        ] or [Words(clip_id, -1, _EMPTY_SENTENCE_TOKEN)]
+        ] or [(clip_id, -1, _EMPTY_SENTENCE_TOKEN, None, None)]
 
-        db_manager.insert(Clips(clip_id, fname, sentence, split))
-        db_manager.insertmany(words)
+        db_manager.execute(sql.insert_into_clips, (clip_id, fname, sentence, split))
+        db_manager.executemany(sql.insert_into_words, words)

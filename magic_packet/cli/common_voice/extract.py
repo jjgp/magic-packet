@@ -1,13 +1,17 @@
 import itertools
 import os
 import tarfile
+from collections import namedtuple
 
 import click
 from tqdm import tqdm
 
 from magic_packet.database import DatabaseManager, sql_join
 
-from .records import AbbrClips, Clips, Words
+from . import sql
+from .records import AbbrClips, Clips
+
+_Clips = namedtuple("Clips", ["fname", "sentence"])
 
 
 @click.command()
@@ -62,15 +66,8 @@ def query_clips(database, between=None, vocab=None, oov_pct=None):
 
 
 def _query_vocab_and_oov_clips(db_manager, vocab, oov_pct):
-    distinct_clips = sql_join(
-        Clips, Words, join_type="inner", on="clip_id = id", distinct=True
-    )(AbbrClips)
-
-    vocab_clips = db_manager.join(
-        distinct_clips,
-        where=" or ".join("word = ?" for _ in vocab),
-        parameters=vocab,
-    )
+    db_manager.execute(sql.select_distinct_clips_where_word_equals(len(vocab)), vocab)
+    vocab_clips = map(_Clips._make, db_manager.fetchall())
 
     if oov_pct:
         where_words_qmark = " or ".join("word = ?" for _ in vocab)
