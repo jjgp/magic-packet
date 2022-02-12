@@ -28,6 +28,8 @@ class Words(NamedTuple):
     clip_id: int
     loc: int
     word: str
+    begin: float = None
+    end: float = None
 
 
 @click.command()

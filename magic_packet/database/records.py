@@ -49,7 +49,7 @@ class SQL:
 
 def sql_table(primary_keys=[]):
     def decorator(_namedtuple):
-        implemented_annotations = {int: "integer", str: "varchar"}
+        implemented_annotations = {float: "real", int: "integer", str: "varchar"}
         table_name = _namedtuple.__name__.lower()
 
         columns, annotations = [], []
