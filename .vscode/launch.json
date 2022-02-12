@@ -11,15 +11,15 @@
       "module": "magic_packet.cli.magicpkt",
       "justMyCode": false,
       "args": [
-          "common-voice",
-          "align",
-          "${workspaceFolder}/data/common_voice/cv-corpus-7.0-2021-07-21/en/clips",
-          "${workspaceFolder}/data/common_voice/lexicon.txt",
-          "english",
-          "${workspaceFolder}/data/common_voice/cv-corpus-7.0-2021-07-21/en/alignment",
-          "--verbose",
-          "--clean",
-          "--overwrite"
+        "common-voice",
+        "align",
+        "${workspaceFolder}/data/common_voice/cv-corpus-7.0-2021-07-21/en/clips",
+        "${workspaceFolder}/data/common_voice/lexicon.txt",
+        "english",
+        "${workspaceFolder}/data/common_voice/cv-corpus-7.0-2021-07-21/en/alignment",
+        "--verbose",
+        "--clean",
+        "--overwrite"
       ]
     },
     {

@@ -56,4 +56,3 @@ def align(**kwargs):
         raise
     finally:
         aligner.cleanup()
-    pass
