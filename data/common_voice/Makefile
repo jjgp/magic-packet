@@ -62,4 +62,4 @@ extract:
 		$(if $(VOCAB),$(foreach word,$(VOCAB),-v $(word)))
 
 lexicon.txt:
-	curl $(LEXICON_URL) -o $@
+	curl -L $(LEXICON_URL) -o $@

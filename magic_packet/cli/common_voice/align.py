@@ -1,5 +1,4 @@
 import atexit
-import multiprocessing as mp
 from argparse import Namespace
 
 import click
@@ -38,7 +37,6 @@ def align(**kwargs):
     from colorama import init
 
     init()
-    mp.freeze_support()
 
     args = Namespace(**kwargs)
     command_line.align.validate_args(args)
