@@ -4,32 +4,16 @@ import os
 import re
 import string
 import tarfile
-from typing import NamedTuple
 
 import click
 from tqdm import tqdm
 
 from magic_packet.cli.utils.lazy_module import tensorflow as tf
-from magic_packet.database import DatabaseManager, sql_table
+from magic_packet.database import DatabaseManager
+
+from .records import Clips, Phones, Words
 
 _EMPTY_SENTENCE_TOKEN = "[empty]"
-
-
-@sql_table(primary_keys=["id"])
-class Clips(NamedTuple):
-    id: int
-    fname: str
-    sentence: str
-    split: str
-
-
-@sql_table(primary_keys=["clip_id", "loc"])
-class Words(NamedTuple):
-    clip_id: int
-    loc: int
-    word: str
-    begin: float = None
-    end: float = None
 
 
 @click.command()
@@ -41,8 +25,8 @@ def createdb(archive, database, split):
         archive, "rb"
     ) as gfile, tarfile.open(mode="r:*", fileobj=gfile) as tar:
         if os.path.exists(database):
-            db_manager.drop(Clips, Words)
-        db_manager.create(Clips, Words)
+            db_manager.drop(Clips, Phones, Words)
+        db_manager.create(Clips, Phones, Words)
 
         n_splits = len(split)
         while n_splits:
