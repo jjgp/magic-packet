@@ -61,15 +61,14 @@ def query_clips(database, between=None, vocab=None, oov_pct=None):
                 parameters=vocab,
             )
 
-            oov_where = (
-                "clip_id is null"
-                "and abs(cast(random() as real)) / 9223372036854775808 < ?"
-            )
             oov_clips = (
                 db.join(
                     _oov_clips(vocab),
-                    where=oov_where,
-                    parameters=oov_pct,
+                    where=(
+                        "clip_id is null"
+                        " and abs(cast(random() as real)) / 9223372036854775808 < ?"
+                    ),
+                    parameters=(oov_pct / 100,),
                 )
                 if oov_pct
                 else None

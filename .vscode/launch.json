@@ -23,6 +23,24 @@
       ]
     },
     {
+      "name": "magicpkt common-voice extract",
+      "type": "python",
+      "request": "launch",
+      "module": "magic_packet.cli.magicpkt",
+      "justMyCode": false,
+      "args": [
+        "common-voice",
+        "extract",
+        "${workspaceFolder}/data/common_voice/cv-corpus-7.0-2021-07-21-en.tar.gz",
+        "${workspaceFolder}/data/common_voice/cv-corpus-7.0-2021-07-21/en/splits.db",
+        "${workspaceFolder}/data/common_voice/cv-corpus-7.0-2021-07-21/en/clips",
+        "--vocab",
+        "fire",
+        "--oov-pct",
+        "1"
+      ]
+    },
+    {
       "name": "uvicorn api",
       "type": "python",
       "request": "launch",
