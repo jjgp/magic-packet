@@ -8,6 +8,8 @@ from montreal_forced_aligner.config import get_temporary_directory
 from montreal_forced_aligner.utils import check_third_party
 from tqdm import tqdm
 
+# from .records import Alignments, Words
+
 
 @click.command()
 @click.argument("corpus_directory")
@@ -82,3 +84,7 @@ def _pretrained_aligner(args):
         **PretrainedAligner.parse_parameters(args.config_path, args),
     )
     return aligner
+
+
+def _word_alignment():
+    return

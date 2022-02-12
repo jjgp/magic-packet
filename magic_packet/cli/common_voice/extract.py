@@ -1,14 +1,13 @@
 import itertools
 import os
 import tarfile
-from collections import namedtuple
 
 import click
 from tqdm import tqdm
 
 from magic_packet.database import DatabaseManager, sql_join
 
-from .createdb import Clips, Words
+from .records import AbbrClips, Clips, Words
 
 
 @click.command()
@@ -74,13 +73,9 @@ def query_clips(database, between=None, vocab=None, oov_pct=None):
         return (vocab_clips, oov_clips)
 
 
-def _abbr_clips_record():
-    return namedtuple("AbbrClips", ["fname", "sentence"])
-
-
 def _distinct_clips():
     return sql_join(Clips, Words, join_type="inner", on="clip_id = id", distinct=True)(
-        _abbr_clips_record()
+        AbbrClips
     )
 
 
@@ -92,7 +87,7 @@ def _oov_clips(vocab):
         join_type="left",
         on="clip_id = id",
         distinct=True,
-    )(_abbr_clips_record())
+    )(AbbrClips)
 
 
 def _sql_sample_condition(sample_pct):

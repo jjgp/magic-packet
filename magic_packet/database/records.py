@@ -2,6 +2,9 @@ from typing import get_type_hints
 
 _DECORATED_ATTR = "_sql"
 
+# TODO: currenly the where clauses do not use the qmark or named styles as described:
+# https://docs.python.org/3/library/sqlite3.html
+
 
 class SQL:
     def joinattr(self, a, b, join_type, select, on):
@@ -19,24 +22,23 @@ class SQL:
         setattr(self, join.__name__, join)
 
     def tableattr(self, name, columns, annotations, primary_keys):
-        self.n_cols = len(columns)
-        self.name = name
+        n_cols = len(columns)
+        insert_values_sql = ", ".join(["?"] * n_cols)
         schema = ", ".join(f"{c} {a}" for c, a in zip(columns, annotations))
         if primary_keys:
             schema += f", primary key ({', '.join(primary_keys)})"
-        self.schema = schema
 
         def create():
-            return f"create table {self.name} ({self.schema})"
+            return f"create table {name} ({schema})"
 
         def drop():
-            return f"drop table if exists {self.name}"
+            return f"drop table if exists {name}"
 
         def insert():
-            return f"insert into {self.name} values ({', '.join(['?'] * self.n_cols)})"
+            return f"insert into {name} values ({insert_values_sql})"
 
         def select(where=None):
-            select = f"select * from {self.name}"
+            select = f"select * from {name}"
             if where:
                 select += f" where {where}"
             return select
@@ -45,6 +47,22 @@ class SQL:
         setattr(self, drop.__name__, drop)
         setattr(self, insert.__name__, insert)
         setattr(self, select.__name__, select)
+
+        self.updateattr(self, name, columns)
+
+    def updateattr(self, name, columns):
+        set_sql = ", ".join(f"{column}=:{column}" for column in columns)
+
+        def update(where):
+            update = f"""
+            update {name}
+            set {set_sql}
+            """
+            if where:
+                update += where
+            return where
+
+        setattr(self, update.__name__, update)
 
 
 def sql_table(primary_keys=[]):
@@ -59,12 +77,7 @@ def sql_table(primary_keys=[]):
             columns.append(name)
             annotations.append(implemented_annotations[t])
 
-        if hasattr(_namedtuple, _DECORATED_ATTR):
-            _sql = getattr(_namedtuple, _DECORATED_ATTR)
-        else:
-            _sql = SQL()
-            setattr(_namedtuple, _DECORATED_ATTR, _sql)
-
+        _sql = _check_decorated_attr(_namedtuple)
         _sql.tableattr(table_name, columns, annotations, primary_keys)
         return _namedtuple
 
@@ -73,16 +86,11 @@ def sql_table(primary_keys=[]):
 
 def sql_join(a, b, join_type, on, distinct=False):
     def decorator(_namedtuple):
-        if hasattr(_namedtuple, _DECORATED_ATTR):
-            _sql = getattr(_namedtuple, _DECORATED_ATTR)
-        else:
-            _sql = SQL()
-            setattr(_namedtuple, _DECORATED_ATTR, _sql)
-
         select = ", ".join(_namedtuple._fields)
         if distinct:
             select = "distinct " + select
 
+        _sql = _check_decorated_attr(_namedtuple)
         _sql.joinattr(
             a if isinstance(a, str) else a.__name__.lower(),
             b if isinstance(b, str) else b.__name__.lower(),
@@ -93,3 +101,24 @@ def sql_join(a, b, join_type, on, distinct=False):
         return _namedtuple
 
     return decorator
+
+
+def sql_update(table):
+    def decorater(_namedtuple):
+        columns = [field for field in _namedtuple._fields]
+        _sql = _check_decorated_attr(_namedtuple)
+        _sql.updateattr(
+            table if isinstance(table, str) else table.__name__.lower(), columns
+        )
+        return _namedtuple
+
+    return decorater
+
+
+def _check_decorated_attr(obj):
+    if hasattr(obj, _DECORATED_ATTR):
+        _sql = getattr(obj, _DECORATED_ATTR)
+    else:
+        _sql = SQL()
+        setattr(obj, _DECORATED_ATTR, _sql)
+    return _sql
