@@ -32,15 +32,15 @@ class DatabaseManager:
     def insertmany(self, records):
         self._cur.executemany(records[0]._sql.insert(), records)
 
-    def join(self, record, where=None):
-        return self._query(record, record._sql.join, where)
+    def join(self, record, where=None, parameters=None):
+        return self._query(record, record._sql.join, where, parameters)
 
-    def select(self, record, where=None):
-        return self._query(record, record._sql.select, where)
+    def select(self, record, where=None, parameters=None):
+        return self._query(record, record._sql.select, where, parameters)
 
     def update(self, record, where):
         self._cur.execute(record._sql.update(where), record)
 
-    def _query(self, record, fn, where, *parameters, **kwargs):
-        self._cur.execute(fn(where), parameters or kwargs)
+    def _query(self, record, fn, where, parameters):
+        self._cur.execute(fn(where), parameters)
         return map(record._make, self._cur.fetchall())

@@ -57,19 +57,26 @@ def query_clips(database, between=None, vocab=None, oov_pct=None):
         if vocab:
             vocab_clips = db.join(
                 _distinct_clips(),
-                where=" or ".join(f"word = '{word}'" for word in vocab),
+                where=" or ".join("word=?" for _ in vocab),
+                parameters=vocab,
+            )
+
+            oov_where = (
+                "clip_id is null"
+                "and abs(cast(random() as real)) / 9223372036854775808 < ?"
             )
             oov_clips = (
                 db.join(
                     _oov_clips(vocab),
-                    where=f"clip_id is null and {_sql_sample_condition(oov_pct / 100)}",
+                    where=oov_where,
+                    parameters=oov_pct,
                 )
                 if oov_pct
                 else None
             )
         else:
-            where = f"id between {between[0]} and {between[1]}" if between else None
-            vocab_clips, oov_clips = db.select(Clips, where), None
+            where = "id between ? and ?" if between else None
+            vocab_clips, oov_clips = db.select(Clips, where, parameters=between), None
         return (vocab_clips, oov_clips)
 
 
@@ -88,7 +95,3 @@ def _oov_clips(vocab):
         on="clip_id = id",
         distinct=True,
     )(AbbrClips)
-
-
-def _sql_sample_condition(sample_pct):
-    return f"abs(cast(random() as real)) / 9223372036854775808 < {sample_pct}"
