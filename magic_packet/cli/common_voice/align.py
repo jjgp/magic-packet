@@ -6,6 +6,7 @@ from montreal_forced_aligner import command_line
 from montreal_forced_aligner.alignment import PretrainedAligner
 from montreal_forced_aligner.config import get_temporary_directory
 from montreal_forced_aligner.utils import check_third_party
+from tqdm import tqdm
 
 
 @click.command()
@@ -29,6 +30,24 @@ def align(**kwargs):
     more info on args, see montreal_forced_aligner/command_line/mfa.py
     """
 
+    _mfa_setup()
+
+    args = Namespace(**kwargs)
+
+    aligner = _pretrained_aligner(args)
+
+    try:
+        aligner.align()
+        _export_files_to_database(aligner)
+        aligner.export_files(args.output_directory)
+    except Exception:
+        aligner.dirty = True
+        raise
+    finally:
+        aligner.cleanup()
+
+
+def _mfa_setup():
     check_third_party()
     hooks = command_line.mfa.ExitHooks()
     hooks.hook()
@@ -38,7 +57,22 @@ def align(**kwargs):
 
     init()
 
-    args = Namespace(**kwargs)
+
+def _export_files_to_database(aligner):
+    total = len(aligner.files)
+    for file in tqdm(
+        aligner.files, desc="Inserting alignment files into database", total=total
+    ):
+        clips = file.aligned_data["clips"]
+
+        for interval in clips["words"]:
+            pass
+
+        for interval in clips["phones"]:
+            pass
+
+
+def _pretrained_aligner(args):
     command_line.align.validate_args(args)
     aligner = PretrainedAligner(
         acoustic_model_path=args.acoustic_model_path,
@@ -47,12 +81,4 @@ def align(**kwargs):
         temporary_directory=args.temporary_directory,
         **PretrainedAligner.parse_parameters(args.config_path, args),
     )
-
-    try:
-        aligner.align()
-        aligner.export_files(args.output_directory)
-    except Exception:
-        aligner.dirty = True
-        raise
-    finally:
-        aligner.cleanup()
+    return aligner
