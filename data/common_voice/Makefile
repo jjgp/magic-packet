@@ -1,3 +1,4 @@
+BETWEEN            ?= 0 19740151  # These IDs represent a range capturing roughly 25% of all clips
 COMMON_VOICE_LANG  ?= en
 COMMON_VOICE_VERS  ?= 7.0-2021-07-21
 LEXICON_URL        ?= https://www.openslr.org/resources/11/librispeech-lexicon.txt
@@ -21,6 +22,7 @@ help:
 	@echo "make $(corpus_archive):\n    download the corpus archive\n"
 	@echo "make $(splits_db):\n    create the splits database\n"
 	@echo "make extract:\n    extract clips of target vocab ($(VOCAB)) and OOV\n"
+	@echo "make extract_between:\n    extract clips between ($(BETWEEN))\n"
 
 $(acoustic_model):
 	mfa model download acoustic $(MFA_ACOUSTIC_MODEL)
@@ -60,6 +62,14 @@ extract:
 		./$(clips_dir) \
 		--oov-pct $(OOV_PCT) \
 		$(if $(VOCAB),$(foreach word,$(VOCAB),-v $(word)))
+
+.PHONY: extract_between
+extract_between:
+	$(magicpkt) common-voice extract \
+		./$(corpus_archive) \
+		./$(splits_db) \
+		./$(clips_dir) \
+		--between $(BETWEEN)
 
 lexicon.txt:
 	curl -L $(LEXICON_URL) -o $@

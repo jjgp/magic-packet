@@ -38,7 +38,7 @@ class SQL:
         def select(where=None):
             select = f"select * from {self.name}"
             if where:
-                select += f"where {where}"
+                select += f" where {where}"
             return select
 
         setattr(self, create.__name__, create)
