@@ -8,7 +8,7 @@ const App = () => {
   const { stream, start, stop: stopStream } = useUserMedia();
   const { blob, stop: stopRecorder } = useMediaRecorder(stream);
   const { source } = useAudioStreamSource();
-  useAudioVisualizer(source, canvasRef);
+  useAudioVisualizer(source, canvasRef, { displaySeconds: 1 });
 
   const canSubmit = !stream && blob && blob.size;
 

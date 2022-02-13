@@ -23,14 +23,14 @@ function resampleMaxAmplitudes(input, outputLength) {
   return output;
 }
 
-export const useAudioVisualizer = (
-  source,
-  canvasRef,
-  amplitudeSpacing = 3,
-  amplitudeWidth = 2,
-  displaySeconds = 3,
-  strokeStyle = "#fff"
-) => {
+export const useAudioVisualizer = (source, canvasRef, parameters) => {
+  const {
+    amplitudeSpacing = 3,
+    amplitudeWidth = 2,
+    displaySeconds = 1,
+    strokeStyle = "#fff",
+  } = parameters;
+
   const analyser = useSourceAnalyser(source);
   const amplitudesRef = useRef([]);
 
