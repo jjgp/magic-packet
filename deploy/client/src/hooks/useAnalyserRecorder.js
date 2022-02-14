@@ -28,6 +28,7 @@ export const useAnalyserRecorder = (source, canvasRef, parameters) => {
     amplitudeSpacing = 3,
     amplitudeWidth = 2,
     numberOfSeconds = 1,
+    onSecondsEnd = () => {},
     strokeStyle = "#fff",
   } = parameters;
 
@@ -37,41 +38,62 @@ export const useAnalyserRecorder = (source, canvasRef, parameters) => {
 
   useEffect(() => {
     if (analyser) {
+      amplitudesRef.current = [];
+      timeDataRef.current = [];
+
       const fftSize = analyser.fftSize;
       const sampleRate = analyser.context.sampleRate;
+      const totalSamples = numberOfSeconds * sampleRate;
       const width = canvasRef.current.width;
       const amplitudesLength = Math.floor(
         width / (amplitudeSpacing + amplitudeWidth)
       );
-      const resampledLength = Math.floor(
-        (fftSize * amplitudesLength) / (sampleRate * numberOfSeconds)
+      const resampledLength = Math.ceil(
+        (fftSize * amplitudesLength) / totalSamples
       );
 
       let amplitudes = Array(amplitudesLength).fill(-Infinity);
+      let intervalId,
+        numIntervals = Math.floor(totalSamples / fftSize);
       const timeDomainData = new Uint8Array(fftSize);
       const getAmplitudes = () => {
-        amplitudes = amplitudes.slice(resampledLength);
         analyser.getByteTimeDomainData(timeDomainData);
-        timeDataRef.current.push(timeDomainData.slice());
+
+        amplitudes = amplitudes.slice(resampledLength);
         const resampled = resampleMaxAmplitudes(
           timeDomainData,
           resampledLength
         );
         amplitudes.push(...resampled);
+
         amplitudesRef.current = amplitudes;
+        timeDataRef.current.push(...timeDomainData);
+
+        if (--numIntervals === 0) {
+          clearInterval(intervalId);
+          onSecondsEnd(Uint8Array.from(timeDataRef.current));
+        }
       };
 
-      getAmplitudes();
-      const delay = (fftSize / sampleRate) * 1e3;
-      const intervalId = setInterval(getAmplitudes, delay);
+      intervalId = setInterval(getAmplitudes, (fftSize / sampleRate) * 1e3);
 
       return function () {
         clearInterval(intervalId);
       };
     }
-  }, [analyser, amplitudeSpacing, amplitudeWidth, canvasRef, numberOfSeconds]);
+  }, [
+    analyser,
+    amplitudeSpacing,
+    amplitudeWidth,
+    canvasRef,
+    numberOfSeconds,
+    onSecondsEnd,
+  ]);
 
   useEffect(() => {
+    if (!analyser) {
+      return;
+    }
     let animationFrame;
 
     const draw = () => {
@@ -106,7 +128,7 @@ export const useAnalyserRecorder = (source, canvasRef, parameters) => {
     return function () {
       cancelAnimationFrame(animationFrame);
     };
-  }, [amplitudeSpacing, amplitudeWidth, canvasRef, strokeStyle]);
+  }, [amplitudeSpacing, amplitudeWidth, analyser, canvasRef, strokeStyle]);
 };
 
 export default useAnalyserRecorder;

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import "./App.css";
 import { useAnalyserRecorder } from "./hooks";
 import { useAudioStreamSource, useUserMedia } from "./providers";
@@ -8,7 +8,11 @@ const App = () => {
   const { start, stop } = useUserMedia();
   const { source } = useAudioStreamSource();
 
-  useAnalyserRecorder(source, canvasRef, { numberOfSeconds: 1 });
+  const onSecondsEnd = (timeDomainData) => {
+    stop();
+  };
+
+  useAnalyserRecorder(source, canvasRef, { numberOfSeconds: 1, onSecondsEnd });
 
   const submit = async () => {
     /*
