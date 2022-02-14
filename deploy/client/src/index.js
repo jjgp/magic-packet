@@ -14,7 +14,7 @@ const Root = () => {
     <React.StrictMode>
       <UserMedia mediaStreamConstraints={constraints}>
         <AudioStreamSource context={audioCtx}>
-          <App sampleRate={audioCtx.sampleRate} />
+          <App context={audioCtx} />
         </AudioStreamSource>
       </UserMedia>
     </React.StrictMode>

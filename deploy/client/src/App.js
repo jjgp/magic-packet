@@ -22,7 +22,7 @@ const usePostSample = (path, body, setData) =>
     }
   }, [path, body, setData]);
 
-const App = ({ sampleRate }) => {
+const App = ({ context }) => {
   const [data, setData] = useState();
   const [status, setStatus] = useState();
   const canvasRef = useRef();
@@ -43,19 +43,40 @@ const App = ({ sampleRate }) => {
 
   useAnalyserRecorder(canvasRef, { numberOfSeconds: 1, onSecondsEnd });
 
-  const onTrainClicked = usePostSample("train", { data, sampleRate }, setData);
-  const onInferClicked = usePostSample("infer", { data, sampleRate }, setData);
+  const onPlayClicked = useCallback(() => {
+    const buffer = context.createBuffer(1, data.length, context.sampleRate);
+    const buffering = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      buffering[i] = data[i] / 128 - 1;
+    }
+
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.start(0);
+  }, [context, data]);
+
+  const onTrainClicked = usePostSample(
+    "train",
+    { data, sampleRate: context.sampleRate },
+    setData
+  );
+  const onInferClicked = usePostSample(
+    "infer",
+    { data, sampleRate: context.sampleRate },
+    setData
+  );
 
   useEffect(() => {
-    fetch("/api/reset", { method: "POST" }).catch(console.log);
-    setInterval(async () => {
-      try {
-        const response = await fetch("/api/poll");
-        setStatus(await response.json());
-      } catch (error) {
-        console.log(error);
-      }
-    }, 2000);
+    // fetch("/api/reset", { method: "POST" }).catch(console.log);
+    // setInterval(async () => {
+    //   try {
+    //     const response = await fetch("/api/poll");
+    //     setStatus(await response.json());
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // }, 2000);
   }, []);
 
   return (
@@ -70,6 +91,9 @@ const App = ({ sampleRate }) => {
             onClick={onRecordClick}
           >
             {"Record"}
+          </button>
+          <button className="App-btn" disabled={!data} onClick={onPlayClicked}>
+            {"Play"}
           </button>
           <button className="App-btn" disabled={!data} onClick={onTrainClicked}>
             {"Train"}
