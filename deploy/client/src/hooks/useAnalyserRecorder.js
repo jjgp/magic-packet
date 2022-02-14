@@ -6,6 +6,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSourceAnalyser } from ".";
+import { useAudioStreamSource } from "../providers";
 
 function resampleMaxAmplitudes(input, outputLength) {
   const output = [];
@@ -23,7 +24,7 @@ function resampleMaxAmplitudes(input, outputLength) {
   return output;
 }
 
-export const useAnalyserRecorder = (source, canvasRef, parameters) => {
+export const useAnalyserRecorder = (canvasRef, parameters) => {
   const {
     amplitudeSpacing = 3,
     amplitudeWidth = 2,
@@ -31,10 +32,10 @@ export const useAnalyserRecorder = (source, canvasRef, parameters) => {
     onSecondsEnd = () => {},
     strokeStyle = "#fff",
   } = parameters;
-
+  const { source } = useAudioStreamSource();
   const analyser = useSourceAnalyser(source);
-  const amplitudesRef = useRef([]);
-  const timeDataRef = useRef([]);
+  const amplitudesRef = useRef();
+  const timeDataRef = useRef();
 
   useEffect(() => {
     if (analyser) {
