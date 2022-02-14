@@ -1,4 +1,4 @@
 export { useAudioContext } from "./useAudioContext";
-export { useAudioVisualizer } from "./useAudioVisualizer";
+export { useAnalyserRecorder } from "./useAnalyserRecorder";
 export { useMediaRecorder } from "./useMediaRecorder";
 export { useSourceAnalyser } from "./useSourceAnalyser";

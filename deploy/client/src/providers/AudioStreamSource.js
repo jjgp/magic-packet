@@ -14,10 +14,11 @@ const AudioStreamSource = ({ children, context }) => {
   useEffect(() => {
     if (stream && !source) {
       setSource(context.createMediaStreamSource(stream));
-    } else if (!stream && source) {
-      setSource(null);
+      return function () {
+        setSource(null);
+      };
     }
-  }, [context, source, stream]);
+  }, [context, stream]);
 
   useEffect(() => () => source && source.disconnect(), [source]);
 

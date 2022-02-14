@@ -23,16 +23,17 @@ function resampleMaxAmplitudes(input, outputLength) {
   return output;
 }
 
-export const useAudioVisualizer = (source, canvasRef, parameters) => {
+export const useAnalyserRecorder = (source, canvasRef, parameters) => {
   const {
     amplitudeSpacing = 3,
     amplitudeWidth = 2,
-    displaySeconds = 1,
+    numberOfSeconds = 1,
     strokeStyle = "#fff",
   } = parameters;
 
   const analyser = useSourceAnalyser(source);
   const amplitudesRef = useRef([]);
+  const timeDataRef = useRef([]);
 
   useEffect(() => {
     if (analyser) {
@@ -43,27 +44,32 @@ export const useAudioVisualizer = (source, canvasRef, parameters) => {
         width / (amplitudeSpacing + amplitudeWidth)
       );
       const resampledLength = Math.floor(
-        (fftSize * amplitudesLength) / (sampleRate * displaySeconds)
+        (fftSize * amplitudesLength) / (sampleRate * numberOfSeconds)
       );
 
       let amplitudes = Array(amplitudesLength).fill(-Infinity);
       const timeDomainData = new Uint8Array(fftSize);
-      const intervalId = setInterval(() => {
+      const getAmplitudes = () => {
         amplitudes = amplitudes.slice(resampledLength);
         analyser.getByteTimeDomainData(timeDomainData);
+        timeDataRef.current.push(timeDomainData.slice());
         const resampled = resampleMaxAmplitudes(
           timeDomainData,
           resampledLength
         );
         amplitudes.push(...resampled);
         amplitudesRef.current = amplitudes;
-      }, (fftSize / sampleRate) * 1e3);
+      };
+
+      getAmplitudes();
+      const delay = (fftSize / sampleRate) * 1e3;
+      const intervalId = setInterval(getAmplitudes, delay);
 
       return function () {
         clearInterval(intervalId);
       };
     }
-  }, [analyser, amplitudeSpacing, amplitudeWidth, canvasRef, displaySeconds]);
+  }, [analyser, amplitudeSpacing, amplitudeWidth, canvasRef, numberOfSeconds]);
 
   useEffect(() => {
     let animationFrame;
@@ -103,4 +109,4 @@ export const useAudioVisualizer = (source, canvasRef, parameters) => {
   }, [amplitudeSpacing, amplitudeWidth, canvasRef, strokeStyle]);
 };
 
-export default useAudioVisualizer;
+export default useAnalyserRecorder;
