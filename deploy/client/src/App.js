@@ -1,10 +1,30 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import { useAnalyserRecorder } from "./hooks";
 import { useUserMedia } from "./providers";
 
+const postBody = (path, body) =>
+  fetch(`/api/${path}`, {
+    body: JSON.stringify(body),
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+const usePostSample = (path, body, setData) =>
+  useCallback(async () => {
+    try {
+      await postBody(path, body);
+      setData(null);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [path, body, setData]);
+
 const App = ({ sampleRate }) => {
   const [data, setData] = useState();
+  const [status, setStatus] = useState();
   const canvasRef = useRef();
   const { stream, start, stop } = useUserMedia();
 
@@ -23,26 +43,25 @@ const App = ({ sampleRate }) => {
 
   useAnalyserRecorder(canvasRef, { numberOfSeconds: 1, onSecondsEnd });
 
-  const onTrainClicked = useCallback(async () => {
-    const body = JSON.stringify({ data, sampleRate });
+  const onTrainClicked = usePostSample("train", { data, sampleRate }, setData);
+  const onInferClicked = usePostSample("infer", { data, sampleRate }, setData);
 
-    try {
-      await fetch("/api/train", {
-        body,
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      setData(null);
-    } catch (error) {
-      console.log(error);
-    }
-  }, [data, sampleRate]);
+  useEffect(() => {
+    fetch("/api/reset", { method: "POST" }).catch(console.log);
+    setInterval(async () => {
+      try {
+        const response = await fetch("/api/poll");
+        setStatus(await response.json());
+      } catch (error) {
+        console.log(error);
+      }
+    }, 2000);
+  }, []);
 
   return (
     <div className="App">
       <header className="App-header">
+        <p>{status}</p>
         <canvas ref={canvasRef} width={window.innerWidth} height={300} />
         <div className="App-btns">
           <button
@@ -54,6 +73,9 @@ const App = ({ sampleRate }) => {
           </button>
           <button className="App-btn" disabled={!data} onClick={onTrainClicked}>
             {"Train"}
+          </button>
+          <button className="App-btn" disabled={!data} onClick={onInferClicked}>
+            {"Infer"}
           </button>
         </div>
       </header>
