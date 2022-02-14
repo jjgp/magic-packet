@@ -1,11 +1,11 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import "./App.css";
 import { useAnalyserRecorder } from "./hooks";
 import { useAudioStreamSource, useUserMedia } from "./providers";
 
 const App = () => {
   const canvasRef = useRef();
-  const { start } = useUserMedia();
+  const { start, stop } = useUserMedia();
   const { source } = useAudioStreamSource();
 
   useAnalyserRecorder(source, canvasRef, { numberOfSeconds: 1 });
@@ -28,7 +28,7 @@ const App = () => {
       <header className="App-header">
         <canvas ref={canvasRef} width={window.innerWidth} height={300} />
         <div className="App-btns">
-          <button className="App-btn" onClick={start}>
+          <button className="App-btn" disabled={source} onClick={start}>
             {"Record"}
           </button>
           <button className="App-btn" onClick={submit}>

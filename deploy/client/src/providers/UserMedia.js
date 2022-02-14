@@ -27,12 +27,15 @@ const UserMedia = ({ children, mediaStreamConstraints }) => {
   }, [mediaStreamConstraints]);
 
   const stopStream = (stream) => {
-    if (stream) {
+    if (stream && stream.active) {
       stream.getTracks().forEach((track) => track.stop());
     }
   };
 
-  const stop = useCallback(() => stopStream(stream), [stream]);
+  const stop = useCallback(() => {
+    stopStream(stream);
+    setStream(null);
+  }, [stream]);
 
   useEffect(() => {
     const previousStream = stream;
