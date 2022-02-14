@@ -1,3 +1,4 @@
 fastapi
-git+https://github.com/jjgp/magic-packet#egg=magic_packet
+pydantic
 uvicorn[standard]
+git+https://github.com/jjgp/magic-packet#egg=magic_packet
