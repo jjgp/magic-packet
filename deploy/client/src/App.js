@@ -3,7 +3,7 @@ import "./App.css";
 import { useAnalyserRecorder } from "./hooks";
 import { useUserMedia } from "./providers";
 
-const App = () => {
+const App = ({ sampleRate }) => {
   const [data, setData] = useState();
   const canvasRef = useRef();
   const { stream, start, stop } = useUserMedia();
@@ -23,18 +23,22 @@ const App = () => {
 
   useAnalyserRecorder(canvasRef, { numberOfSeconds: 1, onSecondsEnd });
 
-  const onSubmitClicked = useCallback(async () => {
-    /*
-      TODO: submit blobs to api once it might be supported. the audioBitsPerSecond or
-      sampleRate might need to be sent along  with the blob it so that the audio may
-      be downsampled.
-      - https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/sampleRate
-      - https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/audioBitsPerSecond
+  const onTrainClicked = useCallback(async () => {
+    const body = JSON.stringify({ data, sampleRate });
 
-      TODO: this closure should be debounced so that it doesn't spam the API...
-    */
-    console.log(await fetch("/api"));
-  }, [data]);
+    try {
+      await fetch("/api/train", {
+        body,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      setData(null);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [data, sampleRate]);
 
   return (
     <div className="App">
@@ -48,12 +52,8 @@ const App = () => {
           >
             {"Record"}
           </button>
-          <button
-            className="App-btn"
-            disabled={!data}
-            onClick={onSubmitClicked}
-          >
-            {"Submit"}
+          <button className="App-btn" disabled={!data} onClick={onTrainClicked}>
+            {"Train"}
           </button>
         </div>
       </header>

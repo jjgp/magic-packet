@@ -72,7 +72,7 @@ export const useAnalyserRecorder = (canvasRef, parameters) => {
 
         if (--numIntervals === 0) {
           clearInterval(intervalId);
-          onSecondsEnd(Uint8Array.from(timeDataRef.current));
+          onSecondsEnd(timeDataRef.current.slice());
         }
       };
 

@@ -1,4 +1,13 @@
+from typing import List
+
 from fastapi import APIRouter
+from pydantic import BaseModel
+
+
+class AudioSample(BaseModel):
+    data: List[int]
+    sampleRate: int
+
 
 router = APIRouter(
     prefix="/api",
@@ -8,5 +17,5 @@ router = APIRouter(
 
 
 @router.post("/train")
-async def train() -> dict:
-    return {"message": "hello from api"}
+async def train(sample: AudioSample) -> dict:
+    return sample
