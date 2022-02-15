@@ -12,7 +12,6 @@ eb        = cd ./eb && eb
 eb_env    = magic-packet-env
 space     = $(subst ,, )
 envpairs  = $(subst $(space),$(comma),$(foreach v,$(envvars),$(v)="$($(v))"))
-uvicorn   = . venv/bin/activate && uvicorn
 
 .PHONY: help
 help:
@@ -68,11 +67,11 @@ eb_terminate:
 
 .PHONY: uvicorn
 uvicorn_api:
-	@$(uvicorn) api.app:app
+	@uvicorn api.app:app
 
 .PHONY: uvicorn_app
 uvicorn_app:
-	@$(uvicorn) app:app
+	@uvicorn app:app
 
 .PHONY: run_devel
 run_devel: client_start uvicorn_api

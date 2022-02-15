@@ -23,4 +23,3 @@ dependencies:
       - pydub==0.25.1
       - tensorflow==2.7.0
       - tensorflow-datasets==4.4.0
-      - tensorflow-model-optimization==0.7.0
