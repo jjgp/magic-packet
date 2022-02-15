@@ -49,6 +49,7 @@ export const useAnalyserRecorder = (canvasRef, parameters) => {
       const amplitudesLength = Math.floor(
         width / (amplitudeSpacing + amplitudeWidth)
       );
+      // taking the Math.ceil ensures there are more samples drawn than the canvas width
       const resampledLength = Math.ceil(
         (fftSize * amplitudesLength) / totalSamples
       );

@@ -35,7 +35,7 @@ const App = ({ context }) => {
 
   const onSecondsEnd = useCallback(
     (timeDomainData) => {
-      setData(timeDomainData);
+      setData(timeDomainData.map((byte) => byte / 128 - 1));
       stop();
     },
     [stop]
@@ -46,9 +46,7 @@ const App = ({ context }) => {
   const onPlayClicked = useCallback(() => {
     const buffer = context.createBuffer(1, data.length, context.sampleRate);
     const buffering = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      buffering[i] = data[i] / 128 - 1;
-    }
+    data.forEach((value, index) => (buffering[index] = value));
 
     const source = context.createBufferSource();
     source.buffer = buffer;
@@ -61,6 +59,7 @@ const App = ({ context }) => {
     { data, sampleRate: context.sampleRate },
     setData
   );
+
   const onInferClicked = usePostSample(
     "infer",
     { data, sampleRate: context.sampleRate },
