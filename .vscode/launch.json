@@ -10,7 +10,11 @@
       "request": "launch",
       "module": "uvicorn",
       "justMyCode": false,
-      "args": ["--app-dir", "deploy", "api.app:app"]
+      "args": ["--app-dir", "deploy", "api.app:app"],
+      "env": {
+        "CONTENT_DIR": "${workspaceRoot}/deploy/content",
+        "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/deploy/content/multilingual_kws"
+      }
     }
   ]
 }

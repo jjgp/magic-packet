@@ -19,6 +19,7 @@ help:
 	@echo "make client_init:\n    install client dependencies\n"
 	@echo "make client_start:\n    start client\n"
 	@echo "make content:\n    prepare app content\n"
+	@echo "make content_rm_tarfiles:\n    rm tarfiles from content directory\n"
 	@echo "make eb_create:\n    eb create $(eb_env) --envars $(envpairs)\n"
 	@echo "make eb_open:\n    eb open\n"
 	@echo "make eb_init:\n    eb init -r $(REGION) -p $(PLATFORM) $(app_name)\n"
@@ -46,8 +47,7 @@ content/multilingual_embedding:
 	@(cd content && curl -LO \
 		https://github.com/harvard-edge/multilingual_kws/releases/download/v0.1-alpha/multilingual_context_73_0.8011.tar.gz \
 		&& tar -xzf multilingual_context_73_0.8011.tar.gz \
-		&& mv multilingual_context_73_0.8011.tar.gz multilingual_embedding \
-		&& rm multilingual_context_73_0.8011.tar.gz)
+		&& mv multilingual_context_73_0.8011.tar.gz multilingual_embedding)
 
 content/multilingual_kws:
 	@git -c advice.detachedHead=false clone \
@@ -59,18 +59,22 @@ content/multilingual_kws:
 content/speech_commands:
 	@(cd content && curl -LO \
 		http://download.tensorflow.org/data/speech_commands_v0.02.tar.gz \
-		&& tar -xzf speech_commands_v0.02.tar.gz \
-		&& mv speech_commands_v0.02 speech_commands \
-		&& rm speech_commands_v0.02.tar.gz)
+		&& mkdir speech_commands \
+		&& tar -xzf speech_commands_v0.02.tar.gz -C speech_commands)
 
 content/unknown_files:
-	@(cd content && curl -L0 \
+	@(cd content && curl -LO \
 		https://github.com/harvard-edge/multilingual_kws/releases/download/v0.1-alpha/unknown_files.tar.gz \
-		&& tar -xzf unknown_files.tar.gz \
-		&& rm unknown_files.tar.gz)
+		&& mkdir unknown_files \
+		&& tar -xzf unknown_files.tar.gz -C unknown_files)
 
 .PHONY: content
+content: $(shell mkdir -p content)
 content: content/multilingual_embedding content/multilingual_kws content/speech_commands
+
+.PHONY: content_rm_tarfiles
+content_rm_tarfiles:
+	rm content/*.tar.gz
 
 .PHONY: eb_create
 eb_create:

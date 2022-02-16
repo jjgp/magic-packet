@@ -54,15 +54,15 @@ const App = ({ context }) => {
     source.start(0);
   }, [context, data]);
 
-  const onTrainClicked = usePostSample(
-    "train",
-    { data, sampleRate: context.sampleRate },
+  const onSampleClicked = usePostSample(
+    "sample",
+    { data, rate: context.sampleRate },
     setData
   );
 
   const onInferClicked = usePostSample(
     "infer",
-    { data, sampleRate: context.sampleRate },
+    { data, rate: context.sampleRate },
     setData
   );
 
@@ -94,8 +94,12 @@ const App = ({ context }) => {
           <button className="App-btn" disabled={!data} onClick={onPlayClicked}>
             {"Play"}
           </button>
-          <button className="App-btn" disabled={!data} onClick={onTrainClicked}>
-            {"Train"}
+          <button
+            className="App-btn"
+            disabled={!data}
+            onClick={onSampleClicked}
+          >
+            {"Sample"}
           </button>
           <button className="App-btn" disabled={!data} onClick={onInferClicked}>
             {"Infer"}

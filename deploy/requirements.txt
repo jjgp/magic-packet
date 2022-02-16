@@ -1,6 +1,8 @@
 fastapi
 pydantic
-uvicorn[standard]
+librosa==0.9.0
+numpy==1.19.5
+soundfile==0.10.3.post1
 tensorflow==2.7.0
-tensorflow-io==0.23.1
+uvicorn[standard]
 git+https://github.com/jjgp/magic-packet#egg=magic_packet
