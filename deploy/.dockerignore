@@ -1,6 +1,6 @@
-.api
 .devcontainer
 build
+content
 eb
 node_modules
 venv

@@ -33,33 +33,20 @@ settings = APISettings()
 
 
 @router.post("/infer")
-async def infer(sample: AudioSample) -> dict:
+def infer(sample: AudioSample) -> dict:
     return sample
+
+
+@router.get("/poll")
+def poll() -> dict:
+    num_samples = len(os.listdir(settings.samples_dir))
+    return dict(num_samples=num_samples)
 
 
 @router.post("/reset")
 def reset() -> dict:
     setup()
     return status.HTTP_200_OK
-
-
-@router.get("/poll")
-async def poll() -> dict:
-    return status.HTTP_200_OK
-
-
-def write_wav(sample: AudioSample):
-    audio = np.array(sample.data, dtype=np.float32).reshape((len(sample.data),))
-    resampled = librosa.resample(
-        audio,
-        orig_sr=sample.rate,
-        target_sr=settings.rate_out,
-        res_type="kaiser_fast",
-        fix=True,
-    )
-    now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    file = f"{settings.samples_dir}/{now}.wav"
-    soundfile.write(file, resampled, settings.rate_out, "PCM_16")
 
 
 @router.post("/sample")
@@ -76,3 +63,17 @@ def setup():
 @router.on_event("startup")
 def startup():
     setup()
+
+
+def write_wav(sample: AudioSample):
+    audio = np.array(sample.data, dtype=np.float32).reshape((len(sample.data),))
+    resampled = librosa.resample(
+        audio,
+        orig_sr=sample.rate,
+        target_sr=settings.rate_out,
+        res_type="kaiser_fast",
+        fix=True,
+    )
+    now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    file = f"{settings.samples_dir}/{now}.wav"
+    soundfile.write(file, resampled, settings.rate_out, "PCM_16")

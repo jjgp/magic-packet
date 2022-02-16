@@ -5,4 +5,3 @@ numpy==1.19.5
 soundfile==0.10.3.post1
 tensorflow==2.7.0
 uvicorn[standard]
-git+https://github.com/jjgp/magic-packet#egg=magic_packet
