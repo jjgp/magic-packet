@@ -12,26 +12,11 @@ const postBody = (path, body) =>
     },
   });
 
-const usePostSample = (path, body, setData) =>
-  useCallback(async () => {
-    try {
-      await postBody(path, body);
-      setData(null);
-    } catch (error) {
-      console.log(error);
-    }
-  }, [path, body, setData]);
-
 const App = ({ context }) => {
   const [data, setData] = useState();
   const [status, setStatus] = useState();
   const canvasRef = useRef();
   const { stream, start, stop } = useUserMedia();
-
-  const onRecordClick = useCallback(() => {
-    setData(null);
-    start();
-  }, [start]);
 
   const onSecondsEnd = useCallback(
     (timeDomainData) => {
@@ -54,34 +39,46 @@ const App = ({ context }) => {
     source.start(0);
   }, [context, data]);
 
-  const onSampleClicked = usePostSample(
-    "sample",
-    { data, rate: context.sampleRate },
-    setData
-  );
+  const onRecordClick = useCallback(() => {
+    setData(null);
+    start();
+  }, [start]);
 
-  const onInferClicked = usePostSample(
-    "infer",
-    { data, rate: context.sampleRate },
-    setData
-  );
+  const usePostSample = (path) =>
+    useCallback(async () => {
+      try {
+        await postBody(path, { data, rate: context.sampleRate });
+        setData(null);
+      } catch (error) {
+        console.log(error);
+      }
+    }, [path, data, context.sampleRate, setData]);
+
+  const onSampleClicked = usePostSample("sample");
+
+  const onInferClicked = usePostSample("infer");
 
   useEffect(() => {
-    // fetch("/api/reset", { method: "POST" }).catch(console.log);
-    // setInterval(async () => {
-    //   try {
-    //     const response = await fetch("/api/poll");
-    //     setStatus(await response.json());
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // }, 2000);
+    fetch("/api/reset", { method: "POST" }).catch(console.log);
+
+    const intervalID = setInterval(async () => {
+      try {
+        const response = await fetch("/api/poll");
+        setStatus(await response.json());
+      } catch (error) {
+        console.log(error);
+      }
+    }, 3000);
+
+    return () => clearInterval(intervalID);
   }, []);
+
+  const statusString = `Nº Samples: ${status?.num_samples || 0}`;
 
   return (
     <div className="App">
       <header className="App-header">
-        <p>{status}</p>
+        <p>{statusString}</p>
         <canvas ref={canvasRef} width={window.innerWidth} height={300} />
         <div className="App-btns">
           <button
@@ -99,7 +96,10 @@ const App = ({ context }) => {
             disabled={!data}
             onClick={onSampleClicked}
           >
-            {"Sample"}
+            {"Submit"}
+          </button>
+          <button className="App-btn" disabled={!status || !status.num_samples}>
+            {"Train"}
           </button>
           <button className="App-btn" disabled={!data} onClick={onInferClicked}>
             {"Infer"}
