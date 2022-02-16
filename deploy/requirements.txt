@@ -1,4 +1,6 @@
 fastapi
 pydantic
 uvicorn[standard]
+tensorflow==2.7.0
+tensorflow-io==0.23.1
 git+https://github.com/jjgp/magic-packet#egg=magic_packet
