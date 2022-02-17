@@ -1,21 +1,23 @@
-ENVFILE     ?= .env
-PLATFORM    ?= docker-20.10.7-ce
-REGION      ?= us-east-1
+ENVFILE         ?= .env
+PLATFORM        ?= docker-20.10.7-ce
+PRIVATE_KEY_DIR ?= ~/.ssh
+REGION          ?= us-east-1
 
 include $(ENVFILE)
-envvars      = $(shell sed 's/=.*//' $(ENVFILE))
+envvars          = $(shell sed 's/=.*//' $(ENVFILE))
 export $(envvars)
 
-comma        = ,
-eb_app_name  = magic-packet
-eb_env_name  = magic-packet-env
-eb_env_cname = $(shell aws elasticbeanstalk describe-environments \
+comma              = ,
+eb_app_name        = magic-packet
+eb_env_name        = magic-packet-env
+eb_env_cname       = aws elasticbeanstalk describe-environments \
 	--environment-names $(eb_env_name) \
 	--no-include-deleted \
 	--query "Environments[*].CNAME" \
-	--output text)
-space        = $(subst ,, )
-envpairs     = $(subst $(space),$(comma),$(foreach v,$(envvars),$(v)="$($(v))"))
+	--output text
+private_key_prefix = $(PRIVATE_KEY_DIR)/$(eb_app_name)-deploy
+space              = $(subst ,, )
+envpairs           = $(subst $(space),$(comma),$(foreach v,$(envvars),$(v)="$($(v))"))
 
 .PHONY: help
 help:
@@ -64,21 +66,24 @@ set_client_api_proxy:
 # The SSL certificate is used to terminate HTTPS at the load balancer.
 # To setup HTTPS reference: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/configuring-https-elb.html
 .PHONY: ssl_certificate
-ssl_certificate: PRIVATE_KEY_DIR ?= ~/.ssh
-ssl_certificate: PRIVATE_KEY_NAME ?= $(eb_app_name)-deploy
-ssl_certificate: PRIVATE_KEY_PREFIX := $(PRIVATE_KEY_DIR)/$(PRIVATE_KEY_NAME)
 ssl_certificate:
-	openssl genrsa 2048 > $(PRIVATE_KEY_PREFIX).pem
-	@$(eb_env_cname) | xargs -I {} eb setenv CLIENT_API_PROXY={} \
-		| xargs -I {} openssl req -new \
-		-key $(PRIVATE_KEY_PREFIX).pem \
-		-out $(PRIVATE_KEY_PREFIX)-csr.pem \
+	@openssl genrsa 2048 > $(private_key_prefix).pem
+	@$(eb_env_cname) | xargs -I {} openssl req -new \
+		-key $(private_key_prefix).pem \
+		-out $(private_key_prefix)-csr.pem \
 		-subj "/C=US/ST=Michigan/L=Detroit/O=Magic Packet/OU=Magic Packet/CN={}"
-	openssl x509 -req -days 365 \
-		-in $(PRIVATE_KEY_PREFIX)-csr.pem \
-		-signkey $(PRIVATE_KEY_PREFIX).pem \
-		-out $(PRIVATE_KEY_PREFIX).crt
-	rm $(PRIVATE_KEY_PREFIX)-csr.pem
+	@openssl x509 -req -days 365 \
+		-in $(private_key_prefix)-csr.pem \
+		-signkey $(private_key_prefix).pem \
+		-out $(private_key_prefix).crt
+	@rm $(private_key_prefix)-csr.pem
+
+.PHONY: import_certificate
+import_certificate:
+	@aws acm import-certificate \
+		--certificate fileb://$(private_key_prefix).crt \
+		--private-key fileb://$(private_key_prefix).pem \
+		--tags Key=$(eb_env_name)
 
 .PHONY: terminate
 terminate:
