@@ -15,16 +15,21 @@ envpairs  = $(subst $(space),$(comma),$(foreach v,$(envvars),$(v)="$($(v))"))
 .PHONY: help
 help:
 	@echo "make create:\n    eb create $(eb_env) --envars $(envpairs)\n"
+	@echo "make deploy:\n    steps using eb to deploy app and environment\n"
 	@echo "make open:\n    eb open\n"
 	@echo "make init:\n    eb init -r $(REGION) -p $(PLATFORM) $(app_name)\n"
 	@echo "make local_run:\n    eb local run --envvars $(envpairs)\n"
 	@echo "make local_open:\n    eb local open\n"
 	@echo "make platform_select:\n    eb platform select\n"
+	@echo "make set_client_api_proxy:\n    eb set_env CLIENT_API_PROXY=...\n"
 	@echo "make terminate:\n    eb terminate --all\n"
 
 .PHONY: create
 create:
 	@eb create $(env_name) --envvars $(envpairs)
+
+.PHONY: deploy
+deploy: | init platform_select create set_client_api_proxy
 
 .PHONY: open
 open:
@@ -51,7 +56,7 @@ set_client_api_proxy:
 		--environment-names $(env_name) \
 		--query "Environments[*].CNAME" \
 		--output text \
-		| xargs -I {} eb set_env CLIENT_API_PROXY={}
+		| xargs -I {} eb setenv CLIENT_API_PROXY={}
 
 .PHONY: terminate
 terminate:
