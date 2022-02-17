@@ -19,6 +19,16 @@ BATCH_SIZE = 64
 CATEGORIES = 3  # silence + unknown + target_keyword
 EPOCHS = 4
 LEARNING_RATE = 1e-3
+MODEL_SETTTINGS = input_data.standard_microspeech_model_settings(label_count=CATEGORIES)
+
+
+def predict(audio, model_path):
+    spec = input_data.to_micro_spectrogram(MODEL_SETTTINGS, audio)
+    single_batch = tf.expand_dims(
+        spec[..., tf.newaxis], axis=0
+    )  # input shape should be (1, 49, 40, 1)
+    model = tf.keras.models.load_model(model_path)
+    return model.predict(single_batch)
 
 
 def train(
@@ -56,11 +66,7 @@ def train(
     return history.history
 
 
-def train_dataset(
-    background_noise_path, samples_path, unknown_files_path, model_settings=3
-):
-    model_settings = input_data.standard_microspeech_model_settings(model_settings)
-
+def train_dataset(background_noise_path, samples_path, unknown_files_path):
     unknown_files_txt = f"{unknown_files_path}/unknown_files.txt"
     unknown_files = []
     with open(unknown_files_txt, "r") as fobj:
@@ -68,7 +74,7 @@ def train_dataset(
             unknown_files.append(f"{unknown_files_path}/{wav}")
 
     audio_dataset = input_data.AudioDataset(
-        model_settings=model_settings,
+        model_settings=MODEL_SETTTINGS,
         commands=[
             "_KEYWORD_"
         ],  # normally this would be the actual keyword. using a sentinel server-side.

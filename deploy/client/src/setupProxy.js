@@ -7,14 +7,4 @@ module.exports = function (app) {
       changeOrigin: true,
     })
   );
-
-  app.use(
-    createProxyMiddleware("/api/train", {
-      target: process.env.CLIENT_API_PROXY,
-      changeOrigin: true,
-      proxyTimeout: 3 * 60 * 1e3,
-      timeout: 3 * 60 * 1e3,
-      ws: true,
-    })
-  );
 };

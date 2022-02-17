@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import api
+from .api import router
 
 app = FastAPI()
 
@@ -12,10 +12,4 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.mount("/api", api.router)
-
-
-@app.websocket("/foobar")
-async def foobar(websocket):
-    pass
+app.include_router(router)

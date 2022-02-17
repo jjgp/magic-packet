@@ -14,8 +14,10 @@ const fetchPost = (path, body) =>
 
 const App = ({ context }) => {
   const [data, setData] = useState();
+  const [history, setHistory] = useState();
+  const [isBusy, setIsBusy] = useState(false);
+  const [prediction, setPrediction] = useState();
   const [sampleCount, setSampleCount] = useState(0);
-  const [status, setStatus] = useState();
   const canvasRef = useRef();
   const { stream, start, stop } = useUserMedia();
 
@@ -45,49 +47,73 @@ const App = ({ context }) => {
     start();
   }, [start]);
 
-  const onSampleClicked = useCallback(async () => {
+  const onPredictClick = useCallback(async () => {
+    setIsBusy(true);
     try {
-      await fetchPost("sample", { data, rate: context.sampleRate });
-      setSampleCount((sc) => sc + 1);
+      const response = await fetchPost("predict", {
+        data,
+        rate: context.sampleRate,
+      });
+      if (response.ok) {
+        setPrediction((await response.json())?.prediction);
+      } else console.log(response);
     } catch (error) {
       console.log(error);
     }
-  }, [data, context.sampleRate, setSampleCount]);
+    setIsBusy(false);
+  }, [data, context.sampleRate]);
 
-  let ws;
-  const onTrainClicked = useCallback(async () => {
-    ws = new WebSocket(`ws://${window.location.host}/api/train`);
+  const onSampleClicked = useCallback(async () => {
+    setIsBusy(true);
+    try {
+      const response = await fetchPost("sample", {
+        data,
+        rate: context.sampleRate,
+      });
+      if (response.ok) setSampleCount((sc) => sc + 1);
+      else console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+    setIsBusy(false);
+  }, [data, context.sampleRate]);
 
-    ws.onopen = console.log;
-
-    ws.onclose = console.log;
-
-    ws.onmessage = (event) => {
-      console.log(event.data);
-    };
-  });
+  const onTrainClicked = async () => {
+    setIsBusy(true);
+    try {
+      const response = await fetch("/api/train");
+      if (response.ok) setHistory(await response.json());
+      else console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+    setIsBusy(false);
+  };
 
   useEffect(
     () => fetch("/api/reset", { method: "POST" }).catch(console.log),
     []
   );
 
-  const samplesString = `No. Samples: ${sampleCount}`;
-  const loss = status?.model_history?.loss;
-  const lossString = `Loss: ${
-    (loss && loss[loss.length - 1].toFixed(3)) || "..."
-  }`;
-  const accuracy = status?.model_history?.accuracy;
-  const accuracyString = `Acc: ${
-    (accuracy && accuracy[accuracy.length - 1].toFixed(3)) || "..."
-  }`;
-  const predictionString = `Prediction: ${"..."}`;
-  const statusString = `${samplesString}, ${lossString}, ${accuracyString}, ${predictionString}`;
+  const loss =
+    (history?.loss && history?.loss[history?.loss.length - 1].toFixed(3)) ||
+    "...";
+  const accuracy =
+    (history?.accuracy &&
+      history?.accuracy[history?.accuracy.length - 1].toFixed(3)) ||
+    "...";
+  const pred =
+    (prediction &&
+      JSON.stringify(prediction?.map((value) => value.toFixed(3)))) ||
+    "...";
 
   return (
     <div className="App">
       <header className="App-header">
-        <p>{statusString}</p>
+        <pre>
+          No. Samples: {sampleCount} Loss: {loss} Acc: {accuracy} Prediction:{" "}
+          {pred}
+        </pre>
         <canvas ref={canvasRef} width={window.innerWidth} height={300} />
         <div className="App-btns">
           <button
@@ -102,24 +128,24 @@ const App = ({ context }) => {
           </button>
           <button
             className="App-btn"
-            disabled={!data}
+            disabled={isBusy || !data}
             onClick={onSampleClicked}
           >
             {"Submit"}
           </button>
           <button
             className="App-btn"
-            disabled={sampleCount < 1}
+            disabled={isBusy || sampleCount < 1}
             onClick={onTrainClicked}
           >
             {"Train"}
           </button>
           <button
             className="App-btn"
-            disabled={sampleCount < 1}
-            onClick={() => {}}
+            disabled={isBusy || !history}
+            onClick={onPredictClick}
           >
-            {"Infer"}
+            {"Predict"}
           </button>
         </div>
       </header>

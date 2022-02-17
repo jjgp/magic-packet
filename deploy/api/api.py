@@ -8,14 +8,15 @@ from typing import List
 import librosa
 import numpy as np
 import soundfile
-from fastapi import FastAPI, WebSocket, status
+from fastapi import APIRouter, status
 from pydantic import BaseModel, BaseSettings
 
+from .model import predict as model_predict
 from .model import train as model_train
 
 
 class AudioSample(BaseModel):
-    data: List[int]
+    data: List[float]
     rate: int
 
 
@@ -30,10 +31,6 @@ class APISettings(BaseSettings):
     @property
     def embedding_path(self):
         return os.path.join(self.content_dir, "multilingual_embedding")
-
-    @property
-    def model_history_path(self):
-        return os.path.join(self.content_dir, "model_history.json")
 
     @property
     def model_path(self):
@@ -52,20 +49,32 @@ class APISettings(BaseSettings):
         return os.path.join(self.content_dir, "unknown_files")
 
 
-api = FastAPI()
+router = APIRouter(
+    prefix="/api",
+    tags=["api"],
+    responses={404: {"description": "Not found"}},
+)
 settings = APISettings()
 sys.path.insert(0, settings.multilingual_kws_path)
 
 
-@api.post("/infer")
-def infer():
-    return status.HTTP_200_OK
+@router.post("/predict")
+def predict(sample: AudioSample):
+    resampled = resampled_audio(sample)
+    prediction = model_predict(resampled, settings.model_path)
+    return dict(prediction=np.squeeze(prediction).tolist())
 
 
-@api.post("/reset")
+def resampled_audio(sample):
+    audio = np.array(sample.data, dtype=np.float32).reshape((len(sample.data),))
+    resampled = librosa.resample(
+        audio, orig_sr=sample.rate, target_sr=settings.rate_out, res_type="kaiser_fast"
+    )
+    return librosa.util.fix_length(resampled, size=settings.rate_out)
+
+
+@router.post("/reset")
 def reset():
-    with contextlib.suppress(FileNotFoundError):
-        os.remove(settings.model_history_path)
     with contextlib.suppress(FileNotFoundError):
         os.remove(settings.model_path)
     shutil.rmtree(settings.samples_path, ignore_errors=True)
@@ -73,39 +82,25 @@ def reset():
     return status.HTTP_200_OK
 
 
-@api.post("/sample")
+@router.post("/sample")
 def sample(sample: AudioSample):
     write_wav(sample)
     return status.HTTP_200_OK
 
 
-@api.websocket("/train")
-async def train(websocket: WebSocket):
-    await websocket.accept()
-    await websocket.send()
-    try:
-        history = model_train(
-            settings.background_noise_path,
-            settings.embedding_path,
-            settings.samples_path,
-            settings.model_path,
-            settings.unknown_files_path,
-        )
-        await websocket.send_json(history)
-        await websocket.close()
-    except Exception as e:
-        print(e)
+@router.get("/train")
+def train():
+    return model_train(
+        settings.background_noise_path,
+        settings.embedding_path,
+        settings.samples_path,
+        settings.model_path,
+        settings.unknown_files_path,
+    )
 
 
 def write_wav(sample: AudioSample):
-    audio = np.array(sample.data, dtype=np.float32).reshape((len(sample.data),))
-    resampled = librosa.resample(
-        audio,
-        orig_sr=sample.rate,
-        target_sr=settings.rate_out,
-        res_type="kaiser_fast",
-        fix=True,
-    )
+    resampled = resampled_audio(sample)
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     file = f"{settings.samples_path}/{now}.wav"
     soundfile.write(file, resampled, settings.rate_out, "PCM_16")
