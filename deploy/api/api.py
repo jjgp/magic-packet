@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+import sys
 from typing import List
 
 import librosa
@@ -8,6 +9,8 @@ import numpy as np
 import soundfile
 from fastapi import APIRouter, BackgroundTasks, status
 from pydantic import BaseModel, BaseSettings
+
+from .model import train as model_train
 
 
 class AudioSample(BaseModel):
@@ -20,8 +23,16 @@ class APISettings(BaseSettings):
     rate_out: int = 16000
 
     @property
+    def embedding_path(self):
+        return os.path.join(self.content_dir, "multilingual_embedding")
+
+    @property
     def model_path(self):
         return os.path.join(self.content_dir, "model.h5")
+
+    @property
+    def multilingual_kws_path(self):
+        return os.path.join(self.content_dir, "multilingual_kws")
 
     @property
     def samples_dir(self):
@@ -34,6 +45,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 settings = APISettings()
+sys.path.insert(0, settings.multilingual_kws_path)
 
 
 @router.post("/infer")
@@ -72,12 +84,8 @@ def startup():
 
 @router.post("/train")
 async def train(background_tasks: BackgroundTasks) -> dict:
-    background_tasks.add_task(train_model)
+    background_tasks.add_task(model_train, settings.embedding_path)
     return status.HTTP_200_OK
-
-
-def train_model():
-    pass
 
 
 def write_wav(sample: AudioSample):

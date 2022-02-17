@@ -17,7 +17,6 @@ multilingual_embedding:
 multilingual_kws:
 	@git -c advice.detachedHead=false clone \
 		--depth=1 \
-		--branch v0.1-alpha \
 		https://github.com/harvard-edge/multilingual_kws \
 		multilingual_kws
 

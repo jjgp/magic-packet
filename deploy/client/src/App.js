@@ -3,14 +3,23 @@ import "./App.css";
 import { useAnalyserRecorder } from "./hooks";
 import { useUserMedia } from "./providers";
 
-const postBody = (path, body) =>
+const fetchPost = (path, body) =>
   fetch(`/api/${path}`, {
-    body: JSON.stringify(body),
+    body: body && JSON.stringify(body),
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
   });
+
+const usePostSample = (path, data, rate) =>
+  useCallback(async () => {
+    try {
+      await fetchPost(path, { data, rate });
+    } catch (error) {
+      console.log(error);
+    }
+  }, [path, data, rate]);
 
 const App = ({ context }) => {
   const [data, setData] = useState();
@@ -44,19 +53,9 @@ const App = ({ context }) => {
     start();
   }, [start]);
 
-  const usePostSample = (path) =>
-    useCallback(async () => {
-      try {
-        await postBody(path, { data, rate: context.sampleRate });
-        setData(null);
-      } catch (error) {
-        console.log(error);
-      }
-    }, [path, data, context.sampleRate, setData]);
+  const onSampleClicked = usePostSample("sample", data, context.sampleRate);
 
-  const onSampleClicked = usePostSample("sample");
-
-  const onInferClicked = usePostSample("infer");
+  const onInferClicked = usePostSample("infer", data, context.sampleRate);
 
   useEffect(() => {
     fetch("/api/reset", { method: "POST" }).catch(console.log);
@@ -83,7 +82,7 @@ const App = ({ context }) => {
         <div className="App-btns">
           <button
             className="App-btn"
-            disabled={stream && stream.active}
+            disabled={stream?.active}
             onClick={onRecordClick}
           >
             {"Record"}
@@ -98,10 +97,18 @@ const App = ({ context }) => {
           >
             {"Submit"}
           </button>
-          <button className="App-btn" disabled={!status || !status.num_samples}>
+          <button
+            className="App-btn"
+            disabled={!status?.num_samples}
+            onClick={() => fetchPost("train")}
+          >
             {"Train"}
           </button>
-          <button className="App-btn" disabled={!data} onClick={onInferClicked}>
+          <button
+            className="App-btn"
+            disabled={!data || !status?.has_model}
+            onClick={onInferClicked}
+          >
             {"Infer"}
           </button>
         </div>
