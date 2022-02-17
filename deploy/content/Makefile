@@ -19,7 +19,7 @@ multilingual_kws:
 		--depth=1 \
 		--branch v0.1-alpha \
 		https://github.com/harvard-edge/multilingual_kws \
-		content/multilingual_kws
+		multilingual_kws
 
 speech_commands:
 	@curl -LO \
