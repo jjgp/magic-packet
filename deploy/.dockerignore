@@ -1,5 +1,7 @@
 .devcontainer
 build
+content/*
+!content/Makefile
 eb
 node_modules
 venv

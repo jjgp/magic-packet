@@ -12,12 +12,12 @@ const AudioStreamSource = ({ children, context }) => {
   const { stream } = useUserMedia();
 
   useEffect(() => {
-    if (stream && !source) {
+    if (stream) {
       setSource(context.createMediaStreamSource(stream));
-    } else if (!stream && source) {
+    } else {
       setSource(null);
     }
-  }, [context, source, stream]);
+  }, [context, stream]);
 
   useEffect(() => () => source && source.disconnect(), [source]);
 

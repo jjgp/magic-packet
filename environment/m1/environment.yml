@@ -28,4 +28,3 @@ dependencies:
       - tensorflow-datasets==4.4.0
       - tensorflow-macos==2.7.0
       - tensorflow-metal==0.3.0
-      - tensorflow-model-optimization==0.7.0

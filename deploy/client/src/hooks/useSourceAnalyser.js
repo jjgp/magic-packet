@@ -4,7 +4,7 @@ export const useSourceAnalyser = (
   destination,
   { fftSize, smoothingTimeConstant } = {
     fftSize: 2048,
-    smoothingTimeConstant: 1,
+    smoothingTimeConstant: 0,
   }
 ) => {
   const [analyser, setAnalyser] = useState();
