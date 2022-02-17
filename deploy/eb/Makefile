@@ -10,7 +10,8 @@ comma        = ,
 eb_app_name  = magic-packet
 eb_env_name  = magic-packet-env
 eb_env_cname = $(shell aws elasticbeanstalk describe-environments \
-	eb_--environment-names $(eb_env_name) \
+	--environment-names $(eb_env_name) \
+	--no-include-deleted \
 	--query "Environments[*].CNAME" \
 	--output text)
 space        = $(subst ,, )

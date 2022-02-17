@@ -8,4 +8,4 @@ To install the pip dependencies make sure to install the `mlops` extras specifie
 pip install -e ".[mlops]"
 ```
 
-[Terraform](https://www.terraform.io/) is a used to create the cloud infrastructure. Make sure to follow the download instructions [here](https://www.terraform.io/downloads.html).
+[Terraform](https://www.terraform.io/) is used to create the cloud infrastructure. Make sure to follow the download instructions [here](https://www.terraform.io/downloads.html).
