@@ -7,8 +7,7 @@ RUN apt-get update && apt-get install -y \
 
 ENV LANG en_US.utf8
 
-RUN apt-get install -y python3-venv \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y python3-venv && rm -rf /var/lib/apt/lists/*
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
 
