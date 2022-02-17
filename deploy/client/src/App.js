@@ -54,20 +54,23 @@ const App = ({ context }) => {
     }
   }, [data, context.sampleRate, setSampleCount]);
 
-  useEffect(() => {
-    fetch("/api/reset", { method: "POST" }).catch(console.log);
+  let ws;
+  const onTrainClicked = useCallback(async () => {
+    ws = new WebSocket(`ws://${window.location.host}/api/train`);
 
-    const intervalID = setInterval(async () => {
-      try {
-        const response = await fetch("/api/poll");
-        setStatus(await response.json());
-      } catch (error) {
-        console.log(error);
-      }
-    }, 3000);
+    ws.onopen = console.log;
 
-    return () => clearInterval(intervalID);
-  }, []);
+    ws.onclose = console.log;
+
+    ws.onmessage = (event) => {
+      console.log(event.data);
+    };
+  });
+
+  useEffect(
+    () => fetch("/api/reset", { method: "POST" }).catch(console.log),
+    []
+  );
 
   const samplesString = `No. Samples: ${sampleCount}`;
   const loss = status?.model_history?.loss;
@@ -106,14 +109,14 @@ const App = ({ context }) => {
           </button>
           <button
             className="App-btn"
-            disabled={!status?.num_samples}
-            onClick={() => fetchPost("train")}
+            disabled={sampleCount < 1}
+            onClick={onTrainClicked}
           >
             {"Train"}
           </button>
           <button
             className="App-btn"
-            disabled={!data || !status?.has_model}
+            disabled={sampleCount < 1}
             onClick={() => {}}
           >
             {"Infer"}

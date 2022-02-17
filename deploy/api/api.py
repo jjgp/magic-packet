@@ -1,6 +1,5 @@
 import contextlib
 import datetime
-import json
 import os
 import shutil
 import sys
@@ -9,7 +8,7 @@ from typing import List
 import librosa
 import numpy as np
 import soundfile
-from fastapi import APIRouter, BackgroundTasks, status
+from fastapi import FastAPI, WebSocket, status
 from pydantic import BaseModel, BaseSettings
 
 from .model import train as model_train
@@ -53,66 +52,49 @@ class APISettings(BaseSettings):
         return os.path.join(self.content_dir, "unknown_files")
 
 
-router = APIRouter(
-    prefix="/api",
-    tags=["api"],
-    responses={404: {"description": "Not found"}},
-)
+api = FastAPI()
 settings = APISettings()
 sys.path.insert(0, settings.multilingual_kws_path)
 
 
-@router.post("/infer")
+@api.post("/infer")
 def infer():
     return status.HTTP_200_OK
 
 
-@router.get("/poll")
-def poll() -> dict:
-    has_model = os.path.exists(settings.model_path)
-    num_samples = len(os.listdir(settings.samples_path))
-    model_history = {}
-    if os.path.exists(settings.model_history_path):
-        with open(settings.model_history_path, "r") as fobj:
-            model_history = json.load(fobj)
-    return dict(
-        has_model=has_model, model_history=model_history, num_samples=num_samples
-    )
-
-
-@router.post("/reset")
+@api.post("/reset")
 def reset():
-    setup()
-    return status.HTTP_200_OK
-
-
-@router.post("/sample")
-def sample(sample: AudioSample):
-    write_wav(sample)
-    return status.HTTP_200_OK
-
-
-def setup():
     with contextlib.suppress(FileNotFoundError):
         os.remove(settings.model_history_path)
     with contextlib.suppress(FileNotFoundError):
         os.remove(settings.model_path)
     shutil.rmtree(settings.samples_path, ignore_errors=True)
     os.mkdir(settings.samples_path)
-
-
-@router.post("/train")
-async def train(background_tasks: BackgroundTasks):
-    background_tasks.add_task(
-        model_train,
-        settings.background_noise_path,
-        settings.embedding_path,
-        settings.model_history_path,
-        settings.samples_path,
-        settings.model_path,
-        settings.unknown_files_path,
-    )
     return status.HTTP_200_OK
+
+
+@api.post("/sample")
+def sample(sample: AudioSample):
+    write_wav(sample)
+    return status.HTTP_200_OK
+
+
+@api.websocket("/train")
+async def train(websocket: WebSocket):
+    await websocket.accept()
+    await websocket.send()
+    try:
+        history = model_train(
+            settings.background_noise_path,
+            settings.embedding_path,
+            settings.samples_path,
+            settings.model_path,
+            settings.unknown_files_path,
+        )
+        await websocket.send_json(history)
+        await websocket.close()
+    except Exception as e:
+        print(e)
 
 
 def write_wav(sample: AudioSample):

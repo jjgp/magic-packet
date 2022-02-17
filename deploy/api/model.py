@@ -1,7 +1,6 @@
 # NOTE: much of this code is adapted from https://github.com/harvard-edge/multilingual_kws  # noqa
 
 import glob
-import json
 import logging
 
 import absl
@@ -23,12 +22,7 @@ LEARNING_RATE = 1e-3
 
 
 def train(
-    background_noise_path,
-    embedding_path,
-    history_path,
-    samples_path,
-    save_path,
-    unknown_files_path,
+    background_noise_path, embedding_path, samples_path, save_path, unknown_files_path
 ):
     tf.get_logger().setLevel(logging.ERROR)
     base_model = tf.keras.models.load_model(embedding_path)
@@ -58,11 +52,8 @@ def train(
 
     dataset = train_dataset(background_noise_path, samples_path, unknown_files_path)
     history = model.fit(dataset, steps_per_epoch=BATCH_SIZE, epochs=EPOCHS)
-
-    with open(history_path, "w") as fobj:
-        fobj.write(json.dumps(history.history))
-
     model.save(save_path)
+    return history.history
 
 
 def train_dataset(
