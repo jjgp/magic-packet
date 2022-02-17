@@ -63,8 +63,8 @@ sys.path.insert(0, settings.multilingual_kws_path)
 
 
 @router.post("/infer")
-def infer(sample: AudioSample) -> dict:
-    return sample
+def infer():
+    return status.HTTP_200_OK
 
 
 @router.get("/poll")
@@ -81,14 +81,14 @@ def poll() -> dict:
 
 
 @router.post("/reset")
-def reset() -> dict:
+def reset():
     setup()
     return status.HTTP_200_OK
 
 
 @router.post("/sample")
-async def sample(sample: AudioSample, background_tasks: BackgroundTasks) -> dict:
-    background_tasks.add_task(write_wav, sample)
+def sample(sample: AudioSample):
+    write_wav(sample)
     return status.HTTP_200_OK
 
 
@@ -102,7 +102,7 @@ def setup():
 
 
 @router.post("/train")
-async def train(background_tasks: BackgroundTasks) -> dict:
+async def train(background_tasks: BackgroundTasks):
     background_tasks.add_task(
         model_train,
         settings.background_noise_path,

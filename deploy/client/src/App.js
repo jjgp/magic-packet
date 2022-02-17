@@ -12,17 +12,9 @@ const fetchPost = (path, body) =>
     },
   });
 
-const usePostSample = (path, data, rate) =>
-  useCallback(async () => {
-    try {
-      await fetchPost(path, { data, rate });
-    } catch (error) {
-      console.log(error);
-    }
-  }, [path, data, rate]);
-
 const App = ({ context }) => {
   const [data, setData] = useState();
+  const [sampleCount, setSampleCount] = useState(0);
   const [status, setStatus] = useState();
   const canvasRef = useRef();
   const { stream, start, stop } = useUserMedia();
@@ -53,9 +45,14 @@ const App = ({ context }) => {
     start();
   }, [start]);
 
-  const onSampleClicked = usePostSample("sample", data, context.sampleRate);
-
-  const onInferClicked = usePostSample("infer", data, context.sampleRate);
+  const onSampleClicked = useCallback(async () => {
+    try {
+      await fetchPost("sample", { data, rate: context.sampleRate });
+      setSampleCount((sc) => sc + 1);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [data, context.sampleRate, setSampleCount]);
 
   useEffect(() => {
     fetch("/api/reset", { method: "POST" }).catch(console.log);
@@ -72,7 +69,7 @@ const App = ({ context }) => {
     return () => clearInterval(intervalID);
   }, []);
 
-  const samplesString = `No. Samples: ${status?.num_samples || 0}`;
+  const samplesString = `No. Samples: ${sampleCount}`;
   const loss = status?.model_history?.loss;
   const lossString = `Loss: ${
     (loss && loss[loss.length - 1].toFixed(3)) || "..."
@@ -117,7 +114,7 @@ const App = ({ context }) => {
           <button
             className="App-btn"
             disabled={!data || !status?.has_model}
-            onClick={onInferClicked}
+            onClick={() => {}}
           >
             {"Infer"}
           </button>
