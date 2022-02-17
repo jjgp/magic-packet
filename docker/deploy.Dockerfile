@@ -51,6 +51,8 @@ COPY --from=content-builder content/unknown_files content/unknown_files
 
 COPY --from=venv-builder venv venv
 
+ENV PYTHONPATH=content/multilingual_kws:/usr/deploy/venv
+
 ENV PATH="/usr/deploy/venv/bin:$PATH"
 
 COPY api api

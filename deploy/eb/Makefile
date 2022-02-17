@@ -36,7 +36,7 @@ init:
 
 .PHONY: local_run
 local_run:
-	@eb local run --envvars $(envpairs)
+	@eb local run --envvars $(envpairs) CLIENT_API_PROXY=http://localhost:$(UVICORN_PORT)
 
 .PHONY: local_open
 local_open:
@@ -45,6 +45,13 @@ local_open:
 .PHONY: platform_select
 platform_select:
 	@eb platform select
+
+set_client_api_proxy:
+	@aws elasticbeanstalk describe-environments \
+		--environment-names $(env_name) \
+		--query "Environments[*].CNAME" \
+		--output text \
+		| xargs -I {} eb set_env CLIENT_API_PROXY={}
 
 .PHONY: terminate
 terminate:
