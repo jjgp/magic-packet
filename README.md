@@ -1,3 +1,3 @@
 # Magic Packet
 
-![MagicPacket](https://user-images.githubusercontent.com/3421544/154580023-1ba95121-3894-4685-95b3-10fa6826e387.png)
+![MagicPacket](https://user-images.githubusercontent.com/3421544/154582080-25c5de07-03eb-4740-b9bf-bb3d9eb3d4ca.png)
