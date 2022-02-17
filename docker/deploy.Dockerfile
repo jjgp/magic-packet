@@ -20,21 +20,41 @@ COPY client .
 
 RUN npm i && PUBLIC_URL=$PUBLIC_URL npm run build
 
-FROM base AS deploy
+FROM base AS content-builder
 
-ENV PATH="/usr/deploy/venv/bin:$PATH"
+COPY content/Makefile content/Makefile
+
+RUN make -C content -j4 && rm content/*.tar.gz
+
+FROM base AS venv-builder
+
+ENV PATH="/venv/bin:$PATH"
+
+COPY requirements.txt .
+
+RUN python -m venv venv \
+    && pip install --no-cache-dir -r requirements.txt
+
+FROM base AS deploy
 
 WORKDIR /usr/deploy
 
 COPY --from=client-builder build client/build
 
+COPY --from=content-builder content/multilingual_embedding content/multilingual_embedding
+
+COPY --from=content-builder content/multilingual_kws content/multilingual_kws
+
+COPY --from=content-builder content/speech_commands/_background_noise_ content/_background_noise_
+
+COPY --from=content-builder content/unknown_files content/unknown_files
+
+COPY --from=venv-builder venv venv
+
+ENV PATH="/usr/deploy/venv/bin:$PATH"
+
 COPY api api
 
-COPY app.py requirements.txt Makefile ./
-
-RUN make content
-
-RUN python -m venv venv \
-    && pip install --no-cache-dir -r requirements.txt
+COPY app.py .
 
 CMD ["uvicorn", "app:app"]
