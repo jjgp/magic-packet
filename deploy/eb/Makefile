@@ -65,6 +65,8 @@ set_client_api_proxy:
 
 # The SSL certificate is used to terminate HTTPS at the load balancer.
 # To setup HTTPS reference: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/configuring-https-elb.html
+# As of now, adding the listener is a manual process.
+# TODO: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-elbv2-listener
 .PHONY: ssl_certificate
 ssl_certificate:
 	@openssl genrsa 2048 > $(private_key_prefix).pem
