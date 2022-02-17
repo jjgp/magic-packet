@@ -61,6 +61,8 @@ platform_select:
 set_client_api_proxy:
 	@$(eb_env_cname) | xargs -I {} eb setenv CLIENT_API_PROXY={}
 
+# The SSL certificate is used to terminate HTTPS at the load balancer.
+# To setup HTTPS reference: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/configuring-https-elb.html
 .PHONY: ssl_certificate
 ssl_certificate: PRIVATE_KEY_DIR ?= ~/.ssh
 ssl_certificate: PRIVATE_KEY_NAME ?= $(eb_app_name)-deploy
