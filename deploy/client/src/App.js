@@ -72,7 +72,17 @@ const App = ({ context }) => {
     return () => clearInterval(intervalID);
   }, []);
 
-  const statusString = `Nº Samples: ${status?.num_samples || 0}`;
+  const samplesString = `No. Samples: ${status?.num_samples || 0}`;
+  const loss = status?.model_history?.loss;
+  const lossString = `Loss: ${
+    (loss && loss[loss.length - 1].toFixed(3)) || "..."
+  }`;
+  const accuracy = status?.model_history?.accuracy;
+  const accuracyString = `Acc: ${
+    (accuracy && accuracy[accuracy.length - 1].toFixed(3)) || "..."
+  }`;
+  const predictionString = `Prediction: ${"..."}`;
+  const statusString = `${samplesString}, ${lossString}, ${accuracyString}, ${predictionString}`;
 
   return (
     <div className="App">

@@ -1,5 +1,6 @@
 import contextlib
 import datetime
+import json
 import os
 import shutil
 import sys
@@ -70,7 +71,13 @@ def infer(sample: AudioSample) -> dict:
 def poll() -> dict:
     has_model = os.path.exists(settings.model_path)
     num_samples = len(os.listdir(settings.samples_path))
-    return dict(has_model=has_model, num_samples=num_samples)
+    model_history = {}
+    if os.path.exists(settings.model_history_path):
+        with open(settings.model_history_path, "r") as fobj:
+            model_history = json.load(fobj)
+    return dict(
+        has_model=has_model, model_history=model_history, num_samples=num_samples
+    )
 
 
 @router.post("/reset")
@@ -87,16 +94,11 @@ async def sample(sample: AudioSample, background_tasks: BackgroundTasks) -> dict
 
 def setup():
     with contextlib.suppress(FileNotFoundError):
-        os.remove(settings.model_path)
+        os.remove(settings.model_history_path)
     with contextlib.suppress(FileNotFoundError):
         os.remove(settings.model_path)
     shutil.rmtree(settings.samples_path, ignore_errors=True)
     os.mkdir(settings.samples_path)
-
-
-@router.on_event("startup")
-def startup():
-    setup()
 
 
 @router.post("/train")
