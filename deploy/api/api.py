@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 import os
 import shutil
@@ -23,8 +24,16 @@ class APISettings(BaseSettings):
     rate_out: int = 16000
 
     @property
+    def background_noise_path(self):
+        return os.path.join(self.content_dir, "speech_commands/_background_noise_")
+
+    @property
     def embedding_path(self):
         return os.path.join(self.content_dir, "multilingual_embedding")
+
+    @property
+    def model_history_path(self):
+        return os.path.join(self.content_dir, "model_history.json")
 
     @property
     def model_path(self):
@@ -35,8 +44,12 @@ class APISettings(BaseSettings):
         return os.path.join(self.content_dir, "multilingual_kws")
 
     @property
-    def samples_dir(self):
+    def samples_path(self):
         return os.path.join(self.content_dir, "samples")
+
+    @property
+    def unknown_files_path(self):
+        return os.path.join(self.content_dir, "unknown_files")
 
 
 router = APIRouter(
@@ -56,7 +69,7 @@ def infer(sample: AudioSample) -> dict:
 @router.get("/poll")
 def poll() -> dict:
     has_model = os.path.exists(settings.model_path)
-    num_samples = len(os.listdir(settings.samples_dir))
+    num_samples = len(os.listdir(settings.samples_path))
     return dict(has_model=has_model, num_samples=num_samples)
 
 
@@ -73,8 +86,12 @@ async def sample(sample: AudioSample, background_tasks: BackgroundTasks) -> dict
 
 
 def setup():
-    shutil.rmtree(settings.samples_dir, ignore_errors=True)
-    os.mkdir(settings.samples_dir)
+    with contextlib.suppress(FileNotFoundError):
+        os.remove(settings.model_path)
+    with contextlib.suppress(FileNotFoundError):
+        os.remove(settings.model_path)
+    shutil.rmtree(settings.samples_path, ignore_errors=True)
+    os.mkdir(settings.samples_path)
 
 
 @router.on_event("startup")
@@ -84,7 +101,15 @@ def startup():
 
 @router.post("/train")
 async def train(background_tasks: BackgroundTasks) -> dict:
-    background_tasks.add_task(model_train, settings.embedding_path)
+    background_tasks.add_task(
+        model_train,
+        settings.background_noise_path,
+        settings.embedding_path,
+        settings.model_history_path,
+        settings.samples_path,
+        settings.model_path,
+        settings.unknown_files_path,
+    )
     return status.HTTP_200_OK
 
 
@@ -98,5 +123,5 @@ def write_wav(sample: AudioSample):
         fix=True,
     )
     now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    file = f"{settings.samples_dir}/{now}.wav"
+    file = f"{settings.samples_path}/{now}.wav"
     soundfile.write(file, resampled, settings.rate_out, "PCM_16")

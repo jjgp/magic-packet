@@ -44,7 +44,7 @@ COPY --from=content-builder content/multilingual_embedding content/multilingual_
 
 COPY --from=content-builder content/multilingual_kws content/multilingual_kws
 
-COPY --from=content-builder content/speech_commands/_background_noise_ content/_background_noise_
+COPY --from=content-builder content/speech_commands/_background_noise_ content/speech_commands/_background_noise_
 
 COPY --from=content-builder content/unknown_files content/unknown_files
 
