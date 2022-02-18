@@ -112,7 +112,7 @@ const App = ({ context }) => {
     <div className="App">
       <header className="App-header">
         <pre>
-          Epoch: {"..."}, Loss: {loss}, Acc: {accuracy}
+          Loss: {loss}, Accuracy: {accuracy}
         </pre>
         <pre>Prediction: {pred}</pre>
         <canvas ref={canvasRef} width={window.innerWidth} height={300} />
