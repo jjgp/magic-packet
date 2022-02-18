@@ -3,7 +3,7 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 module.exports = function (app) {
   app.use(
     createProxyMiddleware("/api", {
-      target: process.env.CLIENT_API_PROXY,
+      target: process.env.REACT_APP_API_PROXY,
       changeOrigin: true,
     })
   );
