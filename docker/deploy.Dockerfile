@@ -1,15 +1,9 @@
-FROM node:16-bullseye AS base
+FROM tensorflow/tensorflow:2.7.0 AS base
 
-RUN apt-get update && apt-get install -y \
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get update && apt-get install -y \
     libsndfile1 \
-    locales \
-    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-
-ENV LANG en_US.utf8
-
-RUN apt-get install -y python3-venv && rm -rf /var/lib/apt/lists/*
-
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+    nodejs
 
 FROM base AS client-builder
 
@@ -29,14 +23,11 @@ FROM base AS deploy
 
 WORKDIR /usr/deploy
 
-ENV PYTHONPATH=content/multilingual_kws:/usr/deploy/venv
-
-ENV PATH="/usr/deploy/venv/bin:$PATH"
+ENV PYTHONPATH=content/multilingual_kws
 
 COPY requirements.txt .
 
-RUN python -m venv venv \
-    && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --from=client-builder build client/build
 

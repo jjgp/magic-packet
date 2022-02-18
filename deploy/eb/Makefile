@@ -34,7 +34,9 @@ help:
 
 .PHONY: create
 create:
-	@eb create $(eb_env_name) --envvars $(envpairs)
+	@eb create $(eb_env_name) \
+		-i p2.xlarge \
+		--envvars $(envpairs)
 
 .PHONY: deploy
 deploy: | init platform_select create set_client_api_proxy

@@ -15,10 +15,10 @@ multilingual_embedding:
 		&& mv multilingual_context_73_0.8011 multilingual_embedding
 
 multilingual_kws:
-	@git -c advice.detachedHead=false clone \
-		--depth=1 \
-		https://github.com/harvard-edge/multilingual_kws \
-		multilingual_kws
+	@curl -L \
+		https://github.com/harvard-edge/multilingual_kws/tarball/main \
+		| tar xz \
+		&& mv harvard-edge-multilingual_kws-* multilingual_kws
 
 speech_commands:
 	@curl -LO \

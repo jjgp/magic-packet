@@ -1,7 +1,6 @@
 fastapi
 pydantic
-librosa==0.9.0
-numpy==1.19.5
-soundfile==0.10.3.post1
-tensorflow==2.7.0
+librosa
+soundfile
+tensorflow-cpu
 uvicorn[standard]
