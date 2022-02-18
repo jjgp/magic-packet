@@ -35,7 +35,7 @@ help:
 .PHONY: create
 create:
 	@eb create $(eb_env_name) \
-		-i p2.xlarge \
+		-it c5a.4xlarge c5d.4xlarge c5ad.4xlarge c6gd.4xlarge c5n.4xlarge \
 		--envvars $(envpairs)
 
 .PHONY: deploy
