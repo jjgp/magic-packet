@@ -28,13 +28,15 @@ help:
 	@echo "make local_run:\n    eb local run --envvars $(envpairs)\n"
 	@echo "make local_open:\n    eb local open\n"
 	@echo "make platform_select:\n    eb platform select\n"
-	@echo "make set_client_api_proxy:\n    eb set_env CLIENT_API_PROXY=...\n"
+	@echo "make set_client_api_proxy:\n    eb set_env REACT_APP_API_PROXY=...\n"
 	@echo "make ssl_certificate:\n    create an ssl certificate for HTTPS\n"
 	@echo "make terminate:\n    eb terminate --all\n"
 
 .PHONY: create
 create:
-	@eb create $(eb_env_name) --envvars $(envpairs)
+	@eb create $(eb_env_name) \
+		-it c5a.4xlarge c5d.4xlarge c5ad.4xlarge c6gd.4xlarge c5n.4xlarge \
+		--envvars $(envpairs)
 
 .PHONY: deploy
 deploy: | init platform_select create set_client_api_proxy
@@ -49,7 +51,7 @@ init:
 
 .PHONY: local_run
 local_run:
-	@eb local run --envvars $(envpairs) CLIENT_API_PROXY=http://localhost:$(UVICORN_PORT)
+	@eb local run --envvars $(envpairs) REACT_APP_API_PROXY=http://localhost:$(UVICORN_PORT)
 
 .PHONY: local_open
 local_open:
@@ -61,7 +63,7 @@ platform_select:
 
 .PHONY: set_client_api_proxy
 set_client_api_proxy:
-	@$(eb_env_cname) | xargs -I {} eb setenv CLIENT_API_PROXY={}
+	@$(eb_env_cname) | xargs -I {} eb setenv REACT_APP_API_PROXY={}
 
 # The SSL certificate is used to terminate HTTPS at the load balancer.
 # To setup HTTPS reference: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/configuring-https-elb.html

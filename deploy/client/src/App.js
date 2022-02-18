@@ -49,6 +49,7 @@ const App = ({ context }) => {
 
   const onPredictClick = useCallback(async () => {
     setIsBusy(true);
+    setPrediction(null);
     try {
       const response = await fetchPost("predict", {
         data,
@@ -111,9 +112,9 @@ const App = ({ context }) => {
     <div className="App">
       <header className="App-header">
         <pre>
-          No. Samples: {sampleCount} Loss: {loss} Acc: {accuracy} Prediction:{" "}
-          {pred}
+          Epoch: {"..."}, Loss: {loss}, Acc: {accuracy}
         </pre>
+        <pre>Prediction: {pred}</pre>
         <canvas ref={canvasRef} width={window.innerWidth} height={300} />
         <div className="App-btns">
           <button
@@ -148,6 +149,7 @@ const App = ({ context }) => {
             {"Predict"}
           </button>
         </div>
+        <pre>No. Samples: {sampleCount}</pre>
       </header>
     </div>
   );
