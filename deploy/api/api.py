@@ -15,11 +15,6 @@ from .model import predict as model_predict
 from .model import train as model_train
 
 
-class AudioSample(BaseModel):
-    data: List[float]
-    rate: int
-
-
 class APISettings(BaseSettings):
     content_dir: str = os.path.abspath("./content")
     rate_out: int = 16000
@@ -47,6 +42,11 @@ class APISettings(BaseSettings):
     @property
     def unknown_files_path(self):
         return os.path.join(self.content_dir, "unknown_files")
+
+
+class AudioSample(BaseModel):
+    data: List[float]
+    rate: int
 
 
 router = APIRouter(
