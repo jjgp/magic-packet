@@ -44,6 +44,7 @@ const App = ({ context }) => {
 
   const onRecordClick = useCallback(() => {
     setData(null);
+    setPrediction(null);
     start();
   }, [start]);
 
