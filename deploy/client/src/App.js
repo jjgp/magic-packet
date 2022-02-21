@@ -91,7 +91,7 @@ const App = ({ context }) => {
     } catch (error) {
       console.log(error);
     }
-    setStatus(false);
+    setStatus("");
   };
 
   useEffect(
