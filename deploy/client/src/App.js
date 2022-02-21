@@ -96,13 +96,11 @@ const App = ({ context }) => {
     []
   );
 
-  const loss =
-    (history?.loss && history?.loss[history?.loss.length - 1].toFixed(3)) ||
-    "...";
-  const accuracy =
-    (history?.accuracy &&
-      history?.accuracy[history?.accuracy.length - 1].toFixed(3)) ||
-    "...";
+  let statusString = "";
+  if (sampleCount) {
+    statusString = `No. Samples: ${sampleCount}`;
+  }
+
   const pred =
     (prediction &&
       JSON.stringify(prediction?.map((value) => value.toFixed(3)))) ||
@@ -111,11 +109,10 @@ const App = ({ context }) => {
   return (
     <div className="App">
       <header className="App-header">
-        <pre>
-          Loss: {loss}, Accuracy: {accuracy}
-        </pre>
-        <pre>Prediction: {pred}</pre>
-        <canvas ref={canvasRef} width={window.innerWidth} height={300} />
+        <div className="App-status">
+          <pre>{statusString}</pre>
+        </div>
+        <canvas ref={canvasRef} width={window.innerWidth - 50} height={250} />
         <div className="App-btns">
           <button
             className="App-btn"
@@ -127,29 +124,34 @@ const App = ({ context }) => {
           <button className="App-btn" disabled={!data} onClick={onPlayClicked}>
             {"Play"}
           </button>
-          <button
-            className="App-btn"
-            disabled={isBusy || !data}
-            onClick={onSampleClicked}
-          >
-            {"Submit"}
-          </button>
-          <button
-            className="App-btn"
-            disabled={isBusy || sampleCount < 1}
-            onClick={onTrainClicked}
-          >
-            {"Train"}
-          </button>
-          <button
-            className="App-btn"
-            disabled={isBusy || !history}
-            onClick={onPredictClick}
-          >
-            {"Predict"}
-          </button>
+          {!history && (
+            <button
+              className="App-btn"
+              disabled={isBusy || !data}
+              onClick={onSampleClicked}
+            >
+              {"Submit"}
+            </button>
+          )}
+          {!history && (
+            <button
+              className="App-btn"
+              disabled={isBusy || sampleCount < 1}
+              onClick={onTrainClicked}
+            >
+              {"Train"}
+            </button>
+          )}
+          {history && (
+            <button
+              className="App-btn"
+              disabled={isBusy}
+              onClick={onPredictClick}
+            >
+              {"Predict"}
+            </button>
+          )}
         </div>
-        <pre>No. Samples: {sampleCount}</pre>
       </header>
     </div>
   );

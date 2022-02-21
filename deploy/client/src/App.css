@@ -3,22 +3,46 @@
 }
 
 .App-btn {
+  background-color: #272d2d;
+  border: none;
+  border-radius: 5px;
+  color: white;
   cursor: pointer;
+  font-size: 16px;
+  padding: 8px 16px;
+  text-align: center;
+  text-decoration: none;
   margin-right: 12px;
 }
 
+.App-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .App-btns {
-  display: inline-block;
-  margin: 0 auto;
+  display: flex;
+  justify-content: center;
 }
 
 .App-header {
-  background-color: #202124;
+  background-color: #f6f8ff;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: black;
+}
+
+.App-status {
+  height: 50px;
+}
+
+canvas {
+  border: 1px solid #272d2d;
+  border-radius: 5px;
+  background-color: white;
+  margin: 22px;
 }
