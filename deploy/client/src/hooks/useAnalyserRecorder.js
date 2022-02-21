@@ -26,11 +26,11 @@ function resampleMaxAmplitudes(input, outputLength) {
 
 export const useAnalyserRecorder = (canvasRef, parameters) => {
   const {
-    amplitudeSpacing = 3,
-    amplitudeWidth = 2,
+    amplitudeSpacing = 4,
+    amplitudeWidth = 3,
     numberOfSeconds = 1,
     onSecondsEnd = () => {},
-    strokeStyle = "#fff",
+    strokeStyle = "#272d2d",
   } = parameters;
   const { source } = useAudioStreamSource();
   const analyser = useSourceAnalyser(source);
@@ -60,6 +60,8 @@ export const useAnalyserRecorder = (canvasRef, parameters) => {
       const timeDomainData = new Uint8Array(fftSize);
       const getAmplitudes = () => {
         analyser.getByteTimeDomainData(timeDomainData);
+        // discard microphone silence
+        if (timeDomainData.every((byte) => byte === 128)) return;
 
         amplitudes = amplitudes.slice(resampledLength);
         const resampled = resampleMaxAmplitudes(
@@ -107,7 +109,7 @@ export const useAnalyserRecorder = (canvasRef, parameters) => {
       const { height, width } = canvas;
       const midHeight = height / 2;
 
-      let x = 0;
+      let x = 5; // start at 5 to avoid drawing to border
       ctx.clearRect(0, 0, width, height);
       ctx.beginPath();
       for (const amplitude of amplitudesRef.current) {
