@@ -6,4 +6,4 @@
 
 ## Inference
 
-![inference](https://user-images.githubusercontent.com/3421544/154983559-f27f403c-9476-4890-8921-d46f386c7da8.gif)
+![inference](https://user-images.githubusercontent.com/3421544/154984959-8509fc56-3bc9-44c1-8e20-e7819f181e69.gif)
