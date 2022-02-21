@@ -41,8 +41,8 @@
 }
 
 canvas {
-  border: 1px solid #272d2d;
-  border-radius: 5px;
-  background-color: white;
-  margin: 22px;
+  border-left: 1px solid #272d2d;
+  border-right: 1px solid #272d2d;
+  margin-bottom: 22px;
+  margin-top: 22px;
 }
