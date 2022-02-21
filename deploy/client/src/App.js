@@ -15,7 +15,7 @@ const fetchPost = (path, body) =>
 const App = ({ context }) => {
   const [data, setData] = useState();
   const [history, setHistory] = useState();
-  const [isBusy, setIsBusy] = useState(false);
+  const [status, setStatus] = useState("");
   const [prediction, setPrediction] = useState();
   const [sampleCount, setSampleCount] = useState(0);
   const canvasRef = useRef();
@@ -48,7 +48,7 @@ const App = ({ context }) => {
   }, [start]);
 
   const onPredictClick = useCallback(async () => {
-    setIsBusy(true);
+    setStatus("predict");
     setPrediction(null);
     try {
       const response = await fetchPost("predict", {
@@ -56,16 +56,18 @@ const App = ({ context }) => {
         rate: context.sampleRate,
       });
       if (response.ok) {
-        setPrediction((await response.json())?.prediction);
+        const responseJson = await response.json();
+        console.log(responseJson?.prediction);
+        setPrediction(responseJson?.prediction);
       } else console.log(response);
     } catch (error) {
       console.log(error);
     }
-    setIsBusy(false);
+    setStatus("");
   }, [data, context.sampleRate]);
 
   const onSampleClicked = useCallback(async () => {
-    setIsBusy(true);
+    setStatus("sample");
     try {
       const response = await fetchPost("sample", {
         data,
@@ -76,11 +78,11 @@ const App = ({ context }) => {
     } catch (error) {
       console.log(error);
     }
-    setIsBusy(false);
+    setStatus("");
   }, [data, context.sampleRate]);
 
   const onTrainClicked = async () => {
-    setIsBusy(true);
+    setStatus("train");
     try {
       const response = await fetch("/api/train");
       if (response.ok) setHistory(await response.json());
@@ -88,7 +90,7 @@ const App = ({ context }) => {
     } catch (error) {
       console.log(error);
     }
-    setIsBusy(false);
+    setStatus(false);
   };
 
   useEffect(
@@ -97,14 +99,16 @@ const App = ({ context }) => {
   );
 
   let statusString = "";
-  if (sampleCount) {
+  if (prediction) {
+    const predictionString = ["silence", "unknown word", "wake word"][
+      prediction.indexOf(Math.max(...prediction))
+    ];
+    statusString = `Audio contains ${predictionString}`;
+  } else if (status === "train") {
+    statusString = "Training...";
+  } else if (!history && sampleCount) {
     statusString = `No. Samples: ${sampleCount}`;
   }
-
-  const pred =
-    (prediction &&
-      JSON.stringify(prediction?.map((value) => value.toFixed(3)))) ||
-    "...";
 
   return (
     <div className="App">
@@ -127,7 +131,7 @@ const App = ({ context }) => {
           {!history && (
             <button
               className="App-btn"
-              disabled={isBusy || !data}
+              disabled={status || !data}
               onClick={onSampleClicked}
             >
               {"Submit"}
@@ -136,7 +140,7 @@ const App = ({ context }) => {
           {!history && (
             <button
               className="App-btn"
-              disabled={isBusy || sampleCount < 1}
+              disabled={status || sampleCount < 1}
               onClick={onTrainClicked}
             >
               {"Train"}
@@ -145,7 +149,7 @@ const App = ({ context }) => {
           {history && (
             <button
               className="App-btn"
-              disabled={isBusy}
+              disabled={status}
               onClick={onPredictClick}
             >
               {"Predict"}
