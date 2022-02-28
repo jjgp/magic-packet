@@ -1,4 +1,22 @@
-create_table_clips = (
+from typing import NamedTuple
+
+
+class Clip(NamedTuple):
+    id: int
+    fname: str
+    sentence: str
+    split: str
+
+
+class Utterance(NamedTuple):
+    clip_id: int
+    loc: int
+    label: str
+    begin: float = None
+    end: float = None
+
+
+CREATE_TABLE_CLIPS = (
     "create table clips "
     "("
     "id integer, "
@@ -19,17 +37,21 @@ def _create_table_utterances(utterance_type):
         "label varchar, "
         "begin real, "
         "end real, "
-        "primary key (clip_id, loc)) "
+        "primary key (clip_id, loc) "
         ")"
     )
 
 
-create_table_phones = _create_table_utterances("phones")
-create_table_words = _create_table_utterances("words")
-drop_all_tables = "drop table if exists clips, phones, words"
-insert_into_clips = "insert into clips values (?, ?, ?, ?)"
-insert_into_phones = "insert into phones values (?, ?, ?, ?, ?)"
-insert_into_words = "insert into words values (?, ?, ?, ?, ?)"
+CREATE_TABLE_PHONES = _create_table_utterances("phones")
+CREATE_TABLE_WORDS = _create_table_utterances("words")
+CREATE_TABLES = (CREATE_TABLE_CLIPS, CREATE_TABLE_PHONES, CREATE_TABLE_WORDS)
+DROP_TABLE_CLIPS = "drop table if exists clips"
+DROP_TABLE_PHONES = "drop table if exists phones"
+DROP_TABLE_WORDS = "drop table if exists words"
+DROP_TABLES = (DROP_TABLE_CLIPS, DROP_TABLE_PHONES, DROP_TABLE_WORDS)
+INSERT_INTO_CLIPS = "insert into clips values (:id, :fname, :sentence, :split)"
+INSERT_INTO_PHONES = "insert into phones values (:clip_id, :loc, :label, :begin, :end)"
+INSERT_INTO_WORDS = "insert into words values (:clip_id, :loc, :label, :begin, :end)"
 
 
 def select_distinct_clips_where_word_equals(n_word_qmarks):

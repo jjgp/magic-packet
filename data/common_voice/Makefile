@@ -1,4 +1,5 @@
-BETWEEN            ?= 0 19740151  # These IDs represent a range capturing roughly 25% of all clips
+# BETWEEN are the clip IDs that represent a range capturing roughly 25% of all clips
+BETWEEN            ?= 0 19740151
 COMMON_VOICE_LANG  ?= en
 COMMON_VOICE_VERS  ?= 7.0-2021-07-21
 LEXICON_URL        ?= https://www.openslr.org/resources/11/librispeech-lexicon.txt

@@ -18,7 +18,7 @@ class DatabaseManager:
     def commit(self):
         self._conn.commit()
 
-    def execute(self, sql, parameters):
+    def execute(self, sql, parameters=()):
         self._cur.execute(sql, parameters)
 
     def executemany(self, sql, seq_of_parameters):

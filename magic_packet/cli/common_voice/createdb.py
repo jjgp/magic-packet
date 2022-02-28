@@ -24,11 +24,8 @@ def createdb(archive, database, split):
     with DatabaseManager(database) as db_manager, tf.io.gfile.GFile(
         archive, "rb"
     ) as gfile, tarfile.open(mode="r:*", fileobj=gfile) as tar:
-        if os.path.exists(database):
-            db_manager.execute(sql.drop_all_tables)
-        db_manager.create(sql.create_table_clips)
-        db_manager.create(sql.create_table_phones)
-        db_manager.create(sql.create_table_words)
+        for statement in sql.DROP_TABLES + sql.CREATE_TABLES:
+            db_manager.execute(statement)
 
         n_splits = len(split)
         while n_splits:
@@ -61,9 +58,11 @@ def _insert_split_into_database(split, tsv_fobj, db_manager):
 
         clip_id = match.group(1)
         words = [
-            (clip_id, loc, word.strip(string.punctuation), None, None)
+            sql.Utterance(clip_id, loc, word.strip(string.punctuation))
             for loc, word in enumerate(sentence.split())
-        ] or [(clip_id, -1, _EMPTY_SENTENCE_TOKEN, None, None)]
+        ] or [sql.Utterance(clip_id, -1, _EMPTY_SENTENCE_TOKEN)]
 
-        db_manager.execute(sql.insert_into_clips, (clip_id, fname, sentence, split))
-        db_manager.executemany(sql.insert_into_words, words)
+        db_manager.execute(
+            sql.INSERT_INTO_CLIPS, sql.Clip(clip_id, fname, sentence, split)
+        )
+        db_manager.executemany(sql.INSERT_INTO_WORDS, words)
