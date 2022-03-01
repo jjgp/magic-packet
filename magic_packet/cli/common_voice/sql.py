@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 
 class Clip(NamedTuple):
@@ -12,8 +12,8 @@ class Utterance(NamedTuple):
     clip_id: int
     loc: int
     label: str
-    begin: float = None
-    end: float = None
+    begin: Optional[float] = None
+    end: Optional[float] = None
 
 
 CREATE_TABLE_CLIPS = (
@@ -54,12 +54,31 @@ INSERT_INTO_PHONES = "insert into phones values (:clip_id, :loc, :label, :begin,
 INSERT_INTO_WORDS = "insert into words values (:clip_id, :loc, :label, :begin, :end)"
 
 
-def select_distinct_clips_where_word_equals(n_word_qmarks):
-    word_equals = " or ".join(["word = ?"] * n_word_qmarks)
+def _label_equal_qmarks(n_qmarks):
+    return " or ".join(["label = ?"] * n_qmarks)
+
+
+def select_clips_where_id_between():
+    return "select * " "from clips " "where id between ? and ?"
+
+
+def select_clips_where_words_equal(n_words):
     return (
-        "select distinct fname, sentence "
-        "from clips "
+        "select distinct c.* "
+        "from clips as c "
         "inner join words "
-        "on clip_id = id "
-        f"where {word_equals}"
+        "on id = clip_id "
+        f"where {_label_equal_qmarks(n_words)} "
+    )
+
+
+def select_pct_of_clips_where_words_not_equal(n_words):
+    return (
+        "select distinct c.* "
+        "from clips as c "
+        "left join "
+        f"(select clip_id from words where {_label_equal_qmarks(n_words)}) "
+        "on id = clip_id "
+        "where clip_id is null "
+        "and abs(cast(random() as real)) / 9223372036854775808 < ? "
     )

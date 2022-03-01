@@ -8,9 +8,7 @@ from montreal_forced_aligner.config import get_temporary_directory
 from montreal_forced_aligner.utils import check_third_party
 from tqdm import tqdm
 
-from magic_packet.database import DatabaseManager
-
-from .records import Alignment
+from .database_manager import DatabaseManager
 
 
 @click.command()
@@ -65,20 +63,14 @@ def _mfa_setup():
 
 def _export_files_to_database(files, database):
     total = len(files)
-    with DatabaseManager(database) as db_manager:
+    with DatabaseManager(database) as _:
         for file in tqdm(
             files, desc="Inserting alignment files into database", total=total
         ):
             clips = file.aligned_data["clips"]
 
             for loc, interval in enumerate(clips["words"]):
-                alignment = Alignment(interval.begin, interval.end)
-                clip_id = interval.utterance.split("-")[-1]
-                db_manager.update(
-                    alignment,
-                    where="clip_id = :clip_id and loc = :loc",
-                    parameters=(clip_id, loc),
-                )
+                pass
 
             for interval in clips["phones"]:
                 pass

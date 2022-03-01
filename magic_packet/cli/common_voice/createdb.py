@@ -9,9 +9,9 @@ import click
 from tqdm import tqdm
 
 from magic_packet.cli.utils.lazy_module import tensorflow as tf
-from magic_packet.database import DatabaseManager
 
 from . import sql
+from .database_manager import DatabaseManager
 
 _EMPTY_SENTENCE_TOKEN = "[empty]"
 
@@ -39,8 +39,6 @@ def createdb(archive, database, split):
                 with tar.extractfile(member) as tsv_fobj:
                     _insert_split_into_database(tsv_name, tsv_fobj, db_manager)
                 n_splits -= 1
-
-        db_manager.commit()
 
 
 def _insert_split_into_database(split, tsv_fobj, db_manager):

@@ -1,17 +1,12 @@
 import itertools
 import os
 import tarfile
-from collections import namedtuple
 
 import click
 from tqdm import tqdm
 
-from magic_packet.database import DatabaseManager, sql_join
-
 from . import sql
-from .records import AbbrClips, Clips
-
-_Clips = namedtuple("Clips", ["fname", "sentence"])
+from .database_manager import DatabaseManager
 
 
 @click.command()
@@ -22,8 +17,24 @@ _Clips = namedtuple("Clips", ["fname", "sentence"])
 @click.option("--oov-pct", type=click.FloatRange(1e-5, 100, clamp=True))
 @click.option("-v", "--vocab", multiple=True)
 def extract(archive, database, output_directory, between, oov_pct, vocab):
-    vocab_clips, oov_clips = query_clips(database, between, vocab, oov_pct)
-    clips = itertools.chain(vocab_clips, oov_clips) if oov_clips else vocab_clips
+    if between and (vocab or oov_pct):
+        # TODO: implementing a custom Option class may be preferable
+        # https://stackoverflow.com/a/51235564
+        raise click.ClickException(
+            "--between and --vocab/--oov-pct are mutually exclusive"
+        )
+
+    with DatabaseManager(database) as db_manager:
+        if between:
+            clips = _query_between_clips(db_manager, between)
+        else:
+            vocab_clips, oov_clips = _query_vocab_and_oov_clips(
+                db_manager, vocab, oov_pct
+            )
+            clips = (
+                itertools.chain(vocab_clips, oov_clips) if oov_clips else vocab_clips
+            )
+
     extract_clips(clips, archive, output_directory)
 
 
@@ -56,43 +67,22 @@ def extract_clips(clips, archive, output_directory):
                 pbar.update(1)
 
 
-def query_clips(database, between=None, vocab=None, oov_pct=None):
-    with DatabaseManager(database) as db_manager:
-        if vocab:
-            return _query_vocab_and_oov_clips(db_manager, vocab, oov_pct)
-        else:
-            where = "id between ? and ?" if between else None
-            return db_manager.select(Clips, where, parameters=between), None
+def _query_between_clips(db_manager, between):
+    db_manager.execute(sql.select_clips_where_id_between, parameters=between)
+    return map(sql.Clip._make, db_manager.fetchall())
 
 
 def _query_vocab_and_oov_clips(db_manager, vocab, oov_pct):
-    db_manager.execute(sql.select_distinct_clips_where_word_equals(len(vocab)), vocab)
-    vocab_clips = map(_Clips._make, db_manager.fetchall())
+    n_words = len(vocab)
+    db_manager.execute(sql.select_clips_where_words_equal(n_words), vocab)
+    vocab_clips = map(sql.Clip._make, db_manager.fetchall())
 
     if oov_pct:
-        where_words_qmark = " or ".join("word = ?" for _ in vocab)
-
-        left_joined_clips = sql_join(
-            Clips,
-            f"(select clip_id from words where {where_words_qmark})",
-            join_type="left",
-            on="clip_id = id",
-            distinct=True,
-        )(AbbrClips)
-
-        where_oov_sampled_qmark = (
-            "clip_id is null"
-            " and abs(cast(random() as real)) / 9223372036854775808 < ?"
-        )
-
-        # where_words_qmark + where_oov_sampled_qmark
         parameters = tuple(vocab) + (oov_pct / 100,)
-
-        oov_clips = db_manager.join(
-            left_joined_clips,
-            where=where_oov_sampled_qmark,
-            parameters=parameters,
+        db_manager.execute(
+            sql.select_pct_of_clips_where_words_not_equal(n_words), parameters
         )
+        oov_clips = map(sql.Clip._make, db_manager.fetchall())
     else:
         oov_clips = None
 
