@@ -6,7 +6,7 @@ import click
 from tqdm import tqdm
 
 from . import sql
-from .database_manager import DatabaseManager
+from .sqlitedb import SQLiteDB
 
 
 @click.command()
@@ -18,18 +18,18 @@ from .database_manager import DatabaseManager
 @click.option("-v", "--vocab", multiple=True)
 def extract(archive, database, output_directory, between, oov_pct, vocab):
     if between and (vocab or oov_pct):
-        # TODO: implementing a custom Option class may be preferable
+        # TODO: implementing a custom option class may be preferable
         # https://stackoverflow.com/a/51235564
         raise click.ClickException(
             "--between and --vocab/--oov-pct are mutually exclusive"
         )
 
-    with DatabaseManager(database) as db_manager:
+    with SQLiteDB(database) as sqlitedb:
         if between:
-            clips = _query_between_clips(db_manager, between)
+            clips = _query_between_clips(sqlitedb, between)
         else:
             vocab_clips, oov_clips = _query_vocab_and_oov_clips(
-                db_manager, vocab, oov_pct
+                sqlitedb, vocab, oov_pct
             )
             clips = (
                 itertools.chain(vocab_clips, oov_clips) if oov_clips else vocab_clips
@@ -67,22 +67,22 @@ def extract_clips(clips, archive, output_directory):
                 pbar.update(1)
 
 
-def _query_between_clips(db_manager, between):
-    db_manager.execute(sql.select_clips_where_id_between, parameters=between)
-    return map(sql.Clip._make, db_manager.fetchall())
+def _query_between_clips(sqlitedb, between):
+    sqlitedb.execute(sql.select_clips_where_id_between, parameters=between)
+    return map(sql.Clip._make, sqlitedb.fetchall())
 
 
-def _query_vocab_and_oov_clips(db_manager, vocab, oov_pct):
+def _query_vocab_and_oov_clips(sqlitedb, vocab, oov_pct):
     n_words = len(vocab)
-    db_manager.execute(sql.select_clips_where_words_equal(n_words), vocab)
-    vocab_clips = map(sql.Clip._make, db_manager.fetchall())
+    sqlitedb.execute(sql.select_clips_where_words_equal(n_words), vocab)
+    vocab_clips = map(sql.Clip._make, sqlitedb.fetchall())
 
     if oov_pct:
         parameters = tuple(vocab) + (oov_pct / 100,)
-        db_manager.execute(
+        sqlitedb.execute(
             sql.select_pct_of_clips_where_words_not_equal(n_words), parameters
         )
-        oov_clips = map(sql.Clip._make, db_manager.fetchall())
+        oov_clips = map(sql.Clip._make, sqlitedb.fetchall())
     else:
         oov_clips = None
 

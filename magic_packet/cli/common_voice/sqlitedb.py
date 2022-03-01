@@ -2,7 +2,7 @@ import os
 import sqlite3 as sql
 
 
-class DatabaseManager:
+class SQLiteDB:
     def __init__(self, database):
         self._database = os.path.abspath(database)
 

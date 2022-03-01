@@ -13,6 +13,7 @@
       "args": [
         "common-voice",
         "align",
+        "${workspaceFolder}/data/common_voice/cv-corpus-7.0-2021-07-21/en/splits.db",
         "${workspaceFolder}/data/common_voice/cv-corpus-7.0-2021-07-21/en/clips",
         "${workspaceFolder}/data/common_voice/lexicon.txt",
         "english",

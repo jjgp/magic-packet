@@ -8,7 +8,7 @@ from montreal_forced_aligner.config import get_temporary_directory
 from montreal_forced_aligner.utils import check_third_party
 from tqdm import tqdm
 
-from .database_manager import DatabaseManager
+from .sqlitedb import SQLiteDB
 
 
 @click.command()
@@ -63,7 +63,7 @@ def _mfa_setup():
 
 def _export_files_to_database(files, database):
     total = len(files)
-    with DatabaseManager(database) as _:
+    with SQLiteDB(database) as _:
         for file in tqdm(
             files, desc="Inserting alignment files into database", total=total
         ):
