@@ -1,25 +1,40 @@
 import itertools
 import os
 import tarfile
-from collections import namedtuple
 
 import click
 from tqdm import tqdm
 
-from magic_packet.database import DatabaseManager, sql_join
-
-from .createdb import Clips, Words
+from . import sql
+from .sqlitedb import SQLiteDB
 
 
 @click.command()
 @click.argument("archive", type=click.Path(exists=True))
 @click.argument("database", type=click.Path(exists=True))
 @click.argument("output_directory")
+@click.option("--between", nargs=2, type=int)
 @click.option("--oov-pct", type=click.FloatRange(1e-5, 100, clamp=True))
 @click.option("-v", "--vocab", multiple=True)
-def extract(archive, database, output_directory, oov_pct, vocab):
-    vocab_clips, oov_clips = query_clips(database, vocab, oov_pct)
-    clips = itertools.chain(vocab_clips, oov_clips) if oov_clips else vocab_clips
+def extract(archive, database, output_directory, between, oov_pct, vocab):
+    if between and (vocab or oov_pct):
+        # TODO: implementing a custom option class may be preferable
+        # https://stackoverflow.com/a/51235564
+        raise click.ClickException(
+            "--between and --vocab/--oov-pct are mutually exclusive"
+        )
+
+    with SQLiteDB(database) as sqlitedb:
+        if between:
+            clips = _query_between_clips(sqlitedb, between)
+        else:
+            vocab_clips, oov_clips = _query_vocab_and_oov_clips(
+                sqlitedb, vocab, oov_pct
+            )
+            clips = (
+                itertools.chain(vocab_clips, oov_clips) if oov_clips else vocab_clips
+            )
+
     extract_clips(clips, archive, output_directory)
 
 
@@ -52,46 +67,23 @@ def extract_clips(clips, archive, output_directory):
                 pbar.update(1)
 
 
-def query_clips(database, vocab=None, oov_pct=None):
-    with DatabaseManager(database) as db:
-        if vocab:
-            vocab_clips = db.join(
-                _distinct_clips(),
-                where=" or ".join(f"word = '{word}'" for word in vocab),
-            )
-            oov_clips = (
-                db.join(
-                    _oov_clips(vocab),
-                    where=f"clip_id is null and {_sql_sample_condition(oov_pct / 100)}",
-                )
-                if oov_pct
-                else None
-            )
-        else:
-            vocab_clips, oov_clips = db.select(Clips), None
-        return (vocab_clips, oov_clips)
+def _query_between_clips(sqlitedb, between):
+    sqlitedb.execute(sql.select_clips_where_id_between, parameters=between)
+    return map(sql.Clip._make, sqlitedb.fetchall())
 
 
-def _abbr_clips_record():
-    return namedtuple("AbbrClips", ["fname", "sentence"])
+def _query_vocab_and_oov_clips(sqlitedb, vocab, oov_pct):
+    n_words = len(vocab)
+    sqlitedb.execute(sql.select_clips_where_words_equal(n_words), vocab)
+    vocab_clips = map(sql.Clip._make, sqlitedb.fetchall())
 
+    if oov_pct:
+        parameters = tuple(vocab) + (oov_pct / 100,)
+        sqlitedb.execute(
+            sql.select_pct_of_clips_where_words_not_equal(n_words), parameters
+        )
+        oov_clips = map(sql.Clip._make, sqlitedb.fetchall())
+    else:
+        oov_clips = None
 
-def _distinct_clips():
-    return sql_join(Clips, Words, join_type="inner", on="clip_id = id", distinct=True)(
-        _abbr_clips_record()
-    )
-
-
-def _oov_clips(vocab):
-    words_equal = " or ".join(f"word = '{word}'" for word in vocab)
-    return sql_join(
-        Clips,
-        f"(select clip_id from words where {words_equal})",
-        join_type="left",
-        on="clip_id = id",
-        distinct=True,
-    )(_abbr_clips_record())
-
-
-def _sql_sample_condition(sample_pct):
-    return f"abs(cast(random() as real)) / 9223372036854775808 < {sample_pct}"
+    return vocab_clips, oov_clips

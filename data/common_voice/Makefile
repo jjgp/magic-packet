@@ -1,3 +1,5 @@
+# BETWEEN are the clip IDs that represent a range capturing roughly 25% of all clips
+BETWEEN            ?= 0 19740151
 COMMON_VOICE_LANG  ?= en
 COMMON_VOICE_VERS  ?= 7.0-2021-07-21
 LEXICON_URL        ?= https://www.openslr.org/resources/11/librispeech-lexicon.txt
@@ -8,10 +10,10 @@ VOCAB              ?= hey fire fox
 acoustic_model      = $(MFA_DIRECTORY)/pretrained_models/acoustic/$(MFA_ACOUSTIC_MODEL).zip
 corpus_archive      = cv-corpus-$(COMMON_VOICE_VERS)-$(COMMON_VOICE_LANG).tar.gz
 corpus_dir          = cv-corpus-$(COMMON_VOICE_VERS)/$(COMMON_VOICE_LANG)
-corpus_db           = $(corpus_dir)/splits.db
+splits_db           = $(corpus_dir)/splits.db
 aligned_dir         = $(corpus_dir)/aligned
 clips_dir           = $(corpus_dir)/clips
-pythonpath          = $(abspath ..)
+pythonpath          = $(abspath ../..)
 python              = PYTHONPATH=$(pythonpath) python -m
 magicpkt            = $(python) magic_packet.cli.magicpkt
 
@@ -19,8 +21,9 @@ magicpkt            = $(python) magic_packet.cli.magicpkt
 help:
 	@echo "make aligned:\n    mfa align audio clips\n"
 	@echo "make $(corpus_archive):\n    download the corpus archive\n"
-	@echo "make $(corpus_db):\n    create the corpus database\n"
+	@echo "make $(splits_db):\n    create the splits database\n"
 	@echo "make extract:\n    extract clips of target vocab ($(VOCAB)) and OOV\n"
+	@echo "make extract_between:\n    extract clips between ($(BETWEEN))\n"
 
 $(acoustic_model):
 	mfa model download acoustic $(MFA_ACOUSTIC_MODEL)
@@ -28,7 +31,7 @@ $(acoustic_model):
 .PHONY: aligned
 aligned: N_JOBS ?= 8
 aligned:
-	yes n | mfa align -j $(N_JOBS) \
+		$(magicpkt) common-voice align -j $(N_JOBS) \
 		$(clips_dir) \
 		lexicon.txt \
 		english \
@@ -45,10 +48,10 @@ $(corpus_archive):
 $(corpus_dir):
 	mkdir -p $(corpus_dir)
 
-$(corpus_db): $(corpus_dir)
+$(splits_db): $(corpus_dir)
 	$(magicpkt) common-voice createdb \
 		./$(corpus_archive) \
-		./$(corpus_db) \
+		./$(splits_db) \
 		-s train -s dev -s test
 
 .PHONY: extract
@@ -56,10 +59,18 @@ extract: OOV_PCT ?= 5
 extract:
 	$(magicpkt) common-voice extract \
 		./$(corpus_archive) \
-		./$(corpus_db) \
+		./$(splits_db) \
 		./$(clips_dir) \
 		--oov-pct $(OOV_PCT) \
 		$(if $(VOCAB),$(foreach word,$(VOCAB),-v $(word)))
 
+.PHONY: extract_between
+extract_between:
+	$(magicpkt) common-voice extract \
+		./$(corpus_archive) \
+		./$(splits_db) \
+		./$(clips_dir) \
+		--between $(BETWEEN)
+
 lexicon.txt:
-	curl $(LEXICON_URL) -o $@
+	curl -L $(LEXICON_URL) -o $@

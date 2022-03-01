@@ -8,6 +8,6 @@
 .vscode/*
 !.vscode/launch.json
 __pycache__
-data/*
-!data/Makefile
+data/common_voice/*
+!data/common_voice/Makefile
 venv
